@@ -2,7 +2,7 @@
 // La llama pg_cron cada 2 horas (ver supabase/migrations/*_cron_registrar_nivel.sql).
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { parsearAlturaPrefectura, URL_ALTURAS_PREFECTURA } from '../_shared/prefectura.ts';
+import { celdasDelPuerto, parsearAlturaPrefectura, URL_ALTURAS_PREFECTURA } from '../_shared/prefectura.ts';
 
 const FUENTE = 'Prefectura Naval Argentina';
 // Evita consultar a Prefectura más seguido de lo necesario si alguien llama la función a mano.
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
       continue;
     }
     if (!fila.fecha) {
-      resultados.push({ localidad: loc.id, error: 'La fila no tiene fecha legible', altura_m: fila.altura_m });
+      resultados.push({ localidad: loc.id, error: 'La fila no tiene fecha legible', altura_m: fila.altura_m, celdas: celdasDelPuerto(html, loc.puerto_prefectura!) });
       continue;
     }
     const { error: e } = await sb.from('lecturas_nivel').upsert(
@@ -66,11 +66,25 @@ Deno.serve(async (req) => {
         medido_en: fila.fecha,
         fuente: FUENTE,
         url: URL_ALTURAS_PREFECTURA,
+        estado: fila.estado,
         modo: 'automatico',
       },
       { onConflict: 'localidad_id,fuente,medido_en', ignoreDuplicates: true },
     );
-    resultados.push({ localidad: loc.id, altura_m: fila.altura_m, medido_en: fila.fecha, error: e?.message });
+    if (fila.alerta_m !== null && fila.evacuacion_m !== null) {
+      // Los umbrales oficiales de Prefectura mandan sobre los cargados a mano.
+      await sb
+        .from('localidades')
+        .update({
+          umbrales: [
+            { nombre: 'Alerta', altura_m: fila.alerta_m, color: '#f59e0b' },
+            { nombre: 'Evacuación', altura_m: fila.evacuacion_m, color: '#dc2626' },
+          ],
+          actualizado_en: new Date().toISOString(),
+        })
+        .eq('id', loc.id);
+    }
+    resultados.push({ localidad: loc.id, altura_m: fila.altura_m, medido_en: fila.fecha, estado: fila.estado, error: e?.message });
   }
   return json({ resultados });
 });

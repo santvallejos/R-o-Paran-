@@ -30,6 +30,7 @@ export async function GET(request: Request): Promise<Response> {
       altura_m: fila.altura_m,
       variacion_m: fila.variacion_m,
       fecha: fila.fecha,
+      estado: fila.estado,
       fuente: 'Prefectura Naval Argentina',
       url: URL_ALTURAS_PREFECTURA,
       modo: 'automatico',

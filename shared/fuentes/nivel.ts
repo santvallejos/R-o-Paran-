@@ -7,6 +7,8 @@ export interface LecturaNivel {
   variacion_m?: number | null;
   /** Fecha y hora de la medición (ISO 8601, hora argentina). */
   fecha: string | null;
+  /** Estado publicado por la fuente, p. ej. "EVACUACION CRECE". */
+  estado?: string | null;
   fuente: string;
   url?: string;
   /** Cómo se obtuvo: automático desde la fuente o cargado a mano. */

@@ -6,6 +6,7 @@ interface FilaLectura {
   altura_m: number;
   variacion_m: number | null;
   medido_en: string;
+  estado: string | null;
   fuente: string;
   url: string | null;
   modo: 'automatico' | 'manual';
@@ -21,6 +22,7 @@ async function desdeSupabase(localidad: string): Promise<LecturaNivel | null> {
     altura_m: Number(f.altura_m),
     variacion_m: f.variacion_m === null ? null : Number(f.variacion_m),
     fecha: f.medido_en,
+    estado: f.estado,
     fuente: f.fuente,
     url: f.url ?? undefined,
     modo: f.modo,

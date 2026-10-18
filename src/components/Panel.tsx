@@ -68,10 +68,16 @@ export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, on
                     {lectura.variacion_m > 0 ? '▲' : lectura.variacion_m < 0 ? '▼' : '='} {Math.abs(lectura.variacion_m * 100).toFixed(0)} cm
                   </span>
                 )}
-                {superado && (
-                  <span className="chip" style={{ background: superado.color }}>
-                    Sobre {superado.nombre.toLowerCase()}
+                {lectura?.estado ? (
+                  <span className="chip" style={{ background: superado?.color ?? '#e2e8f0' }} title="Estado publicado por la fuente oficial">
+                    {lectura.estado.charAt(0) + lectura.estado.slice(1).toLowerCase()}
                   </span>
+                ) : (
+                  superado && (
+                    <span className="chip" style={{ background: superado.color }}>
+                      Sobre {superado.nombre.toLowerCase()}
+                    </span>
+                  )
                 )}
               </div>
               <div className="tarjeta__meta">

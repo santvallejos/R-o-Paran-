@@ -16,7 +16,10 @@
     "cotaCeroProvisoria": true,
     "puertoPrefectura": "PASO DE LA PATRIA"
   },
-  "umbrales": [{ "nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b" }],
+  "umbrales": [
+    { "nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b" },
+    { "nombre": "Evacuación", "altura_m": 7.0, "color": "#dc2626" }
+  ],
   "pronostico": { "desde_m": 7.1, "hasta_m": 7.5, "fuente": "Municipalidad de Paso de la Patria" },
   "simulador": { "min_m": 5.0, "max_m": 8.5, "paso_m": 0.05 },
   "dem": {
