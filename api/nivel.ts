@@ -19,7 +19,7 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const res = await fetch(URL_ALTURAS_PREFECTURA, {
       headers: { 'user-agent': 'mapa-crecida-parana (proyecto informativo sin fines de lucro)' },
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) throw new Error(`Prefectura respondió ${res.status}`);
     const fila = parsearAlturaPrefectura(await res.text(), localidad.hidrometro.puertoPrefectura);

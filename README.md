@@ -5,6 +5,10 @@ MVP: **Paso de la Patria (Corrientes)**. Diseñada para sumar otras localidades 
 
 > Estimación. No reemplaza las indicaciones oficiales de Prefectura, el municipio y Defensa Civil.
 
+**En línea:** https://rio-parana-topaz.vercel.app · Vista 3D: https://rio-parana-topaz.vercel.app/?vista=3d
+
+Se publica solo en Vercel con cada push a `claude/mvp-paso-de-la-patria` (rama de producción del proyecto `rio-parana`).
+
 ## Qué hace
 
 - **Altura oficial del río** con fecha, hora, estado y fuente (Prefectura Naval). Una Edge Function de Supabase la
