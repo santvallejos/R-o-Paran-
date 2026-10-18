@@ -2,3 +2,9 @@ node_modules
 dist
 .vercel
 *.local
+procesamiento/cache
+procesamiento/salida/*/*.tif
+procesamiento/salida/*/zonas.geojson
+__pycache__
+.pytest_cache
+.venv

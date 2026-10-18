@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import type { LecturaNivel } from '../../shared/fuentes/nivel';
 import type { Localidad } from '../../shared/localidades';
 import { COLORES } from '../lib/capa';
+import type { MetaModelo } from '../lib/modelo.worker';
 
 interface Props {
   localidad: Localidad;
@@ -12,6 +13,7 @@ interface Props {
   onCotaCero: (c: number) => void;
   hectareas: { sim: number; actual: number | null } | null;
   estadoModelo: 'cargando' | 'listo' | string;
+  metaModelo: MetaModelo | null;
 }
 
 const m = (h: number) => `${h.toFixed(2).replace('.', ',')} m`;
@@ -25,7 +27,7 @@ function fechaLegible(iso: string | null) {
   return d.toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' }) + ' h';
 }
 
-export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, onCotaCero, hectareas, estadoModelo }: Props) {
+export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, onCotaCero, hectareas, estadoModelo, metaModelo }: Props) {
   const [abierto, setAbierto] = useState(true);
   const { simulador: s } = localidad;
   const actual = lectura?.altura_m ?? null;
@@ -179,10 +181,18 @@ export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, on
             Se toma la altura del {localidad.hidrometro.nombre.toLowerCase()} y se pasa a cota sobre el nivel del mar sumando la cota del cero de la
             escala. Después se inunda sólo el terreno <strong>conectado con el río</strong> que queda por debajo de esa cota.
           </p>
-          <p>
-            Terreno: {localidad.dem.nombre}. Con esa resolución no se ven terraplenes ni defensas, y las zonas con árboles o edificios pueden parecer más
-            altas de lo que son.
-          </p>
+          {metaModelo?.precalculado ? (
+            <p>
+              Terreno: {metaModelo.fuenteDem} (procesado el {new Date(metaModelo.procesadoEn ?? '').toLocaleDateString('es-AR')}): se restó la altura
+              típica de árboles y edificios, se filtró el ruido y se marcaron las defensas conocidas como barreras. Con ~30 m de resolución todavía
+              puede no ver terraplenes chicos.
+            </p>
+          ) : (
+            <p>
+              Terreno: {metaModelo?.fuenteDem ?? localidad.dem.nombre}. Con esa resolución no se ven terraplenes ni defensas, y las zonas con árboles o
+              edificios pueden parecer más altas de lo que son.
+            </p>
+          )}
           <label className="calibracion">
             Cota del cero del hidrómetro (m)
             <input type="number" step={0.05} value={cotaCero} onChange={(e) => Number.isFinite(e.target.valueAsNumber) && onCotaCero(e.target.valueAsNumber)} />

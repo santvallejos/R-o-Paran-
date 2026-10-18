@@ -5,6 +5,7 @@ import urlWorkerMapa from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { useEffect, useRef, useState } from 'react';
 import type { Localidad } from '../../shared/localidades';
 import { pintarCapa } from '../lib/capa';
+import type { TerrenoProcesado } from '../lib/localidad';
 import type { Modelo } from '../lib/modelo';
 
 // El bundler no sigue el worker interno de MapLibre: se le indica la URL explícita.
@@ -14,12 +15,17 @@ type Base = 'satelite' | 'calles';
 
 interface Props {
   localidad: Localidad;
+  /** Relieve procesado de la localidad; `null` = usar el DEM público de la configuración. */
+  terreno: TerrenoProcesado | null;
   modelo: Modelo | null;
   cotaSim: number;
   cotaActual: number | null;
 }
 
-function estilo(loc: Localidad): StyleSpecification {
+function estilo(loc: Localidad, t: TerrenoProcesado | null): StyleSpecification {
+  const dem = t
+    ? { tiles: [t.tiles], encoding: t.encoding, minzoom: t.minzoom, maxzoom: t.maxzoom, bounds: t.bounds, attribution: `Relieve: ${t.fuente} (procesado), ESA WorldCover` }
+    : { tiles: [loc.dem.tiles], encoding: loc.dem.encoding, maxzoom: loc.dem.maxzoom, attribution: loc.dem.attribution };
   return {
     version: 8,
     sources: {
@@ -37,16 +43,9 @@ function estilo(loc: Localidad): StyleSpecification {
         maxzoom: 19,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       },
-      terreno: {
-        type: 'raster-dem',
-        tiles: [loc.dem.tiles],
-        encoding: loc.dem.encoding,
-        tileSize: 256,
-        maxzoom: loc.dem.maxzoom,
-        attribution: loc.dem.attribution,
-      },
+      terreno: { type: 'raster-dem', tileSize: 256, ...dem },
       // MapLibre recomienda una fuente aparte para el sombreado.
-      sombreado: { type: 'raster-dem', tiles: [loc.dem.tiles], encoding: loc.dem.encoding, tileSize: 256, maxzoom: loc.dem.maxzoom },
+      sombreado: { type: 'raster-dem', tileSize: 256, ...dem, attribution: undefined },
     },
     layers: [
       { id: 'satelite', type: 'raster', source: 'satelite' },
@@ -62,7 +61,7 @@ function estilo(loc: Localidad): StyleSpecification {
   };
 }
 
-export function Mapa({ localidad, modelo, cotaSim, cotaActual }: Props) {
+export function Mapa({ localidad, terreno, modelo, cotaSim, cotaActual }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<maplibregl.Map | null>(null);
   const buffer = useRef<ImageData | null>(null);
@@ -73,9 +72,11 @@ export function Mapa({ localidad, modelo, cotaSim, cotaActual }: Props) {
   useEffect(() => {
     const m = new maplibregl.Map({
       container: contenedor.current!,
-      style: estilo(localidad),
+      style: estilo(localidad, terreno),
       center: localidad.centro,
       zoom: localidad.zoom,
+      // Con relieve procesado, la navegación queda dentro del área que cubre.
+      ...(terreno && { maxBounds: terreno.bounds, minZoom: terreno.minzoom }),
       pitch: 55,
       bearing: -20,
       maxPitch: 75,
@@ -92,7 +93,9 @@ export function Mapa({ localidad, modelo, cotaSim, cotaActual }: Props) {
       mapa.current = null;
       setListo(false);
     };
-  }, [localidad]);
+    // Sólo se recrea el mapa si cambia la localidad o su relieve, no por datos operativos.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localidad.id, terreno]);
 
   // Capa de agua: se crea una vez y se actualiza la imagen en cada cambio de cota.
   useEffect(() => {

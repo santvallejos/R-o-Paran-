@@ -14,6 +14,6 @@ export function cargarModelo(localidad: string): Promise<Modelo> {
       w.terminate();
       reject(new Error(e.message || 'Error en el cálculo del modelo'));
     };
-    w.postMessage({ localidad });
+    w.postMessage({ localidad, origen: location.origin });
   });
 }

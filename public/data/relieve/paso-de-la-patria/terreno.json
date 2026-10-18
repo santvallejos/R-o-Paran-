@@ -1,0 +1,13 @@
+{
+  "tiles": "/data/relieve/paso-de-la-patria/terreno/{z}/{x}/{y}.png",
+  "minzoom": 10,
+  "maxzoom": 14,
+  "bounds": [
+    -58.71094,
+    -27.43029,
+    -58.42529,
+    -27.19601
+  ],
+  "encoding": "terrarium",
+  "fuente": "Copernicus GLO-30"
+}

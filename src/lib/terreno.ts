@@ -18,14 +18,22 @@ const decodificadores: Record<Localidad['dem']['encoding'], Decodificador> = {
   mapbox: (r, g, b) => -10000 + (r * 65536 + g * 256 + b) * 0.1,
 };
 
-async function leerTile(url: string): Promise<ImageData> {
+export async function leerTile(url: string): Promise<ImageData> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`No se pudo bajar el terreno (${res.status}): ${url}`);
-  const bmp = await createImageBitmap(await res.blob());
+  // Sin conversión de color ni premultiplicado: los píxeles son datos, no una imagen.
+  const bmp = await createImageBitmap(await res.blob(), { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
   const canvas = new OffscreenCanvas(bmp.width, bmp.height);
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
   ctx.drawImage(bmp, 0, 0);
   return ctx.getImageData(0, 0, bmp.width, bmp.height);
+}
+
+/** Decodifica una imagen Terrarium completa a elevaciones. */
+export function decodificarTerrarium({ data }: ImageData): Float32Array {
+  const out = new Float32Array(data.length / 4);
+  for (let i = 0; i < out.length; i++) out[i] = decodificadores.terrarium(data[i * 4], data[i * 4 + 1], data[i * 4 + 2]);
+  return out;
 }
 
 /** Baja los tiles de terreno que cubren el bbox y arma una grilla recortada. */

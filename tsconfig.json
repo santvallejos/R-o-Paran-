@@ -12,7 +12,8 @@
     "noEmit": true,
     "isolatedModules": true,
     "allowImportingTsExtensions": false,
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node"],
+    "resolveJsonModule": true
   },
   "include": ["src", "shared", "api", "vite.config.ts"]
 }

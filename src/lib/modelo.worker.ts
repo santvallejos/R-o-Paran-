@@ -1,8 +1,15 @@
 /// <reference lib="webworker" />
-// Baja el terreno y calcula los umbrales de inundación fuera del hilo principal.
+// Carga el modelo de inundación fuera del hilo principal. Si la localidad tiene relieve
+// procesado (procesamiento/procesar.py) usa ese; si no, lo calcula con los tiles públicos.
 import { getLocalidad } from '../../shared/localidades';
 import { calcularUmbrales } from './inundacion';
-import { cargarGrilla, indicesDeSemillas } from './terreno';
+import { cargarGrilla, decodificarTerrarium, indicesDeSemillas, leerTile } from './terreno';
+
+export interface MetaModelo {
+  fuenteDem: string;
+  procesadoEn: string | null;
+  precalculado: boolean;
+}
 
 export type MensajeModelo =
   | {
@@ -13,23 +20,64 @@ export type MensajeModelo =
       umbral: Float32Array;
       esquinas: [number, number][];
       celda_m: number;
-      /** Cota del pelo de agua del río en el DEM (para separar el cauce permanente). */
+      /** Cota hasta la que se considera cauce permanente (no se pinta ni se cuenta). */
       cotaCauce: number;
+      meta: MetaModelo;
     }
   | { ok: false; error: string };
 
-self.onmessage = async (e: MessageEvent<{ localidad: string }>) => {
+interface ModeloJson {
+  ancho: number;
+  alto: number;
+  esquinas: [number, number][];
+  celda_m: number;
+  cotaCauce: number;
+  sinDato: number;
+  fuenteDem: string;
+  procesadoEn: string;
+}
+
+async function precalculado(id: string, origen: string): Promise<Extract<MensajeModelo, { ok: true }> | null> {
+  const base = `${origen}/data/relieve/${id}`;
+  const res = await fetch(`${base}/modelo.json`);
+  if (!res.ok || !res.headers.get('content-type')?.includes('json')) return null;
+  const m = (await res.json()) as ModeloJson;
+  const [elevImg, umbralImg] = await Promise.all([leerTile(`${base}/elev.png`), leerTile(`${base}/umbral.png`)]);
+  const elev = decodificarTerrarium(elevImg);
+  const umbral = decodificarTerrarium(umbralImg);
+  for (let i = 0; i < umbral.length; i++) if (umbral[i] >= m.sinDato) umbral[i] = Infinity;
+  return {
+    ok: true,
+    ancho: m.ancho,
+    alto: m.alto,
+    elev,
+    umbral,
+    esquinas: m.esquinas,
+    celda_m: m.celda_m,
+    cotaCauce: m.cotaCauce,
+    meta: { fuenteDem: `${m.fuenteDem} corregido`, procesadoEn: m.procesadoEn, precalculado: true },
+  };
+}
+
+self.onmessage = async (e: MessageEvent<{ localidad: string; origen: string }>) => {
+  const responder = (msg: MensajeModelo, transfer: Transferable[] = []) => (self as DedicatedWorkerGlobalScope).postMessage(msg, transfer);
   try {
     const loc = getLocalidad(e.data.localidad);
     if (!loc) throw new Error(`Localidad desconocida: ${e.data.localidad}`);
+
+    const pre = await precalculado(loc.id, e.data.origen).catch(() => null);
+    if (pre) return responder(pre, [pre.elev.buffer, pre.umbral.buffer]);
+
     const g = await cargarGrilla(loc.dem, loc.bbox);
     const semillas = indicesDeSemillas(g, loc.semillasRio, loc.dem.zoomModelo);
     if (semillas.length === 0) throw new Error('Las semillas del río quedan fuera del área de estudio.');
     const umbral = calcularUmbrales(g.elev, g.ancho, g.alto, semillas);
     const cotaCauce = Math.max(...semillas.map((s) => g.elev[s])) + 0.5;
-    const msg: MensajeModelo = { ok: true, ...g, umbral, cotaCauce };
-    (self as DedicatedWorkerGlobalScope).postMessage(msg, [g.elev.buffer, umbral.buffer]);
+    responder(
+      { ok: true, ...g, umbral, cotaCauce, meta: { fuenteDem: loc.dem.nombre, procesadoEn: null, precalculado: false } },
+      [g.elev.buffer, umbral.buffer],
+    );
   } catch (err) {
-    (self as DedicatedWorkerGlobalScope).postMessage({ ok: false, error: (err as Error).message } satisfies MensajeModelo);
+    responder({ ok: false, error: (err as Error).message });
   }
 };

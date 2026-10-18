@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+"""
+Procesa el relieve de una localidad y genera todo lo que usa la app.
+
+    python procesar.py paso-de-la-patria                # Copernicus GLO-30 + correcciones
+    python procesar.py paso-de-la-patria --dem mde.tif  # DEM propio (IGN, FABDEM, drone…)
+    python procesar.py paso-de-la-patria --subir        # además, carga las zonas en Supabase
+
+Salidas:
+    public/data/relieve/<id>/modelo.json, elev.png, umbral.png   modelo precalculado para la app
+    public/data/relieve/<id>/terreno/{z}/{x}/{y}.png             relieve 3D (terrain-RGB)
+    procesamiento/salida/<id>/zonas.geojson, version.json         zonas inundables por nivel
+    procesamiento/salida/<id>/dem_corregido.tif, umbral.tif       para revisar en QGIS
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+import numpy as np
+from rasterio.enums import Resampling
+
+from relieve import correcciones, exportar, fuentes, supabase
+from relieve.grilla import Grilla, lonlat_a_pixel
+from relieve.inundacion import calcular_umbrales
+
+RAIZ = Path(__file__).resolve().parent.parent
+
+
+def log(msg: str) -> None:
+    print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+
+
+def niveles(cfg: dict) -> list[float]:
+    n = cfg["nivelesZonas_m"]
+    pasos = int(round((n["hasta"] - n["desde"]) / n["paso"]))
+    return [round(n["desde"] + i * n["paso"], 2) for i in range(pasos + 1)]
+
+
+def cargar_defensas(localidad: str) -> list[dict]:
+    lineas = []
+    local = RAIZ / "procesamiento" / "datos" / localidad / "defensas.geojson"
+    if local.exists():
+        for f in json.loads(local.read_text())["features"]:
+            lineas.append({"nombre": f["properties"].get("nombre"), "cota_m": f["properties"].get("cota_m"), "geom": f["geometry"]})
+    if supabase.disponible():
+        lineas += supabase.defensas(localidad)
+    return lineas
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("localidad")
+    ap.add_argument("--dem", type=Path, help="GeoTIFF propio en lugar de Copernicus GLO-30")
+    ap.add_argument("--nombre-dem", help="Nombre de la fuente del DEM propio (para mostrar en la app)")
+    ap.add_argument("--sin-correccion-cobertura", action="store_true")
+    ap.add_argument("--sin-tiles", action="store_true", help="No regenerar los tiles de relieve 3D")
+    ap.add_argument("--subir", action="store_true", help="Cargar la versión y sus zonas en Supabase")
+    args = ap.parse_args()
+
+    loc = json.loads((RAIZ / "shared" / "localidades" / f"{args.localidad}.json").read_text())
+    p = loc["procesamiento"]
+    cota_cero = loc["hidrometro"]["cotaCero_m"]
+    z = loc["dem"]["zoomModelo"]
+    cache = RAIZ / "procesamiento" / "cache" / args.localidad
+    salida = RAIZ / "procesamiento" / "salida" / args.localidad
+    publico = RAIZ / "public" / "data" / "relieve" / args.localidad
+
+    # Área de tiles = área de estudio + margen; la grilla grande está alineada a tiles.
+    m = p["margenTiles_grados"]
+    bbox = loc["bbox"]
+    bbox_tiles = [bbox[0] - m, bbox[1] - m, bbox[2] + m, bbox[3] + m]
+    grande = Grilla.desde_bbox(bbox_tiles, z, alinear_a_tiles=True)
+    modelo = Grilla.desde_bbox(bbox, z)
+    fil, col = grande.ventana_de(modelo)
+    lectura_bounds = grande.bounds_lonlat
+    log(f"Grilla {grande.ancho}x{grande.alto} (z{z}, {grande.celda_m:.1f} m/px); modelo {modelo.ancho}x{modelo.alto}")
+
+    # 1. Relieve y capas auxiliares
+    if args.dem:
+        fuente_dem = args.nombre_dem or args.dem.stem
+        ruta_dem = args.dem
+    else:
+        fuente_dem = "Copernicus GLO-30"
+        log("Bajando Copernicus GLO-30…")
+        ruta_dem = fuentes.copernicus_dem(lectura_bounds, cache)
+    elev = fuentes.a_grilla(ruta_dem, grande, Resampling.bilinear)
+    log("Bajando máscara de agua (Copernicus WBM)…")
+    wbm = fuentes.a_grilla(fuentes.copernicus_agua(lectura_bounds, cache), grande, Resampling.nearest, np.uint8, nodata=255)
+    agua = np.isin(wbm, (fuentes.WBM_LAGO, fuentes.WBM_RIO))
+    rio = wbm == fuentes.WBM_RIO
+
+    rio_modelo = rio[fil, col]
+    if not rio_modelo.any():
+        log("La máscara no marca río en el área: uso las semillas de la configuración.")
+        rio_modelo = np.zeros(rio_modelo.shape, bool)
+        for lon, lat in loc["semillasRio"]:
+            x, y = lonlat_a_pixel(lon, lat, z)
+            rio_modelo[int(y) - modelo.y0, int(x) - modelo.x0] = True
+    cota_agua = float(np.median(elev[fil, col][rio_modelo]))
+    log(f"Pelo de agua del DEM: {cota_agua:.2f} m (≈ {cota_agua - cota_cero:.2f} m en el hidrómetro)")
+
+    # 2. Correcciones
+    pasos = []
+    if not args.sin_correccion_cobertura:
+        log("Bajando cobertura del suelo (ESA WorldCover 10 m)…")
+        cob = fuentes.a_grilla(fuentes.worldcover(lectura_bounds, cache), grande, Resampling.mode, np.uint8, nodata=0)
+        elev = correcciones.corregir_cobertura(elev, cob, agua, p["correccionCobertura_m"])
+        pasos.append({"correccion_cobertura": p["correccionCobertura_m"], "fuente": "ESA WorldCover 2021"})
+    elev = correcciones.filtrar_ruido(elev, agua, p["filtroMediana_px"])
+    pasos.append({"filtro_mediana_px": p["filtroMediana_px"]})
+    elev = correcciones.piso_en_agua(elev, agua, cota_agua)
+
+    defensas = cargar_defensas(args.localidad)
+    if defensas:
+        mascara, cotas = exportar.rasterizar_lineas(grande, defensas)
+        elev = correcciones.quemar_barreras(elev, mascara, cotas)
+        log(f"Defensas aplicadas como barreras: {len(defensas)}")
+    pasos.append({"defensas": len(defensas)})
+
+    # 3. Modelo de inundación
+    log("Calculando umbrales de inundación (Priority-Flood)…")
+    t = time.time()
+    elev_m = elev[fil, col]
+    umbral = calcular_umbrales(elev_m, rio_modelo)
+    log(f"  listo en {time.time() - t:.1f} s")
+    cauce = agua[fil, col]
+    cota_cauce = cota_agua + 0.25
+
+    procesado = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    meta = {
+        "localidad": args.localidad,
+        "fuenteDem": fuente_dem,
+        "procesadoEn": procesado,
+        "cotaCero_m": cota_cero,
+        "pasos": pasos,
+    }
+
+    # 4. Salidas
+    exportar.modelo_para_app(publico, modelo, elev_m, umbral, cota_cauce, meta)
+    exportar.guardar_geotiff(salida / "dem_corregido.tif", grande, elev)
+    exportar.guardar_geotiff(salida / "umbral.tif", modelo, umbral)
+    log(f"Modelo para la app en {publico.relative_to(RAIZ)}")
+
+    if not args.sin_tiles:
+        zmin, zmax = p["zoomTiles"]
+        n = exportar.tiles_terreno(publico / "terreno", grande, elev, bbox_tiles, range(zmin, zmax + 1))
+        (publico / "terreno.json").write_text(
+            json.dumps({"tiles": f"/data/relieve/{args.localidad}/terreno/{{z}}/{{x}}/{{y}}.png", "minzoom": zmin, "maxzoom": zmax,
+                        "bounds": [round(v, 5) for v in grande.bounds_lonlat], "encoding": "terrarium", "fuente": fuente_dem}, indent=2)
+        )
+        log(f"Tiles de relieve: {n}")
+
+    log("Generando zonas inundables por nivel…")
+    zonas = exportar.zonas_por_nivel(modelo, umbral, cauce, cota_cero, niveles(p), p["simplificarZonas_m"])
+    exportar.geojson_zonas(zonas, salida / "zonas.geojson", args.localidad)
+    version = {
+        "localidad_id": args.localidad,
+        "fuente_dem": fuente_dem,
+        "resolucion_m": round(modelo.celda_m, 2),
+        "cota_cero_m": cota_cero,
+        "parametros": {"pasos": pasos, "cota_agua_dem_m": round(cota_agua, 3)},
+        "procesado_en": procesado,
+        "activar": True,
+        "zonas": zonas,
+    }
+    (salida / "version.json").write_text(json.dumps(version, separators=(",", ":")))
+    for zz in zonas[:: max(1, len(zonas) // 6)]:
+        log(f"  {zz['altura_m']:.2f} m → {zz['superficie_ha']:.0f} ha")
+
+    if args.subir:
+        vid = supabase.cargar_version(version)
+        log(f"Versión de relieve {vid} cargada en Supabase con {len(zonas)} zonas")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

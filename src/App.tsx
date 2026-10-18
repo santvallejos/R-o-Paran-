@@ -1,34 +1,44 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { LecturaNivel } from '../shared/fuentes/nivel';
-import { getLocalidad, localidades } from '../shared/localidades';
+import { getLocalidad, localidades, type Localidad } from '../shared/localidades';
 import { Mapa } from './components/Mapa';
 import { Panel } from './components/Panel';
 import { superficieInundada } from './lib/inundacion';
+import { conDatosOperativos, terrenoProcesado, type TerrenoProcesado } from './lib/localidad';
 import { cargarModelo, type Modelo } from './lib/modelo';
 import { obtenerNivel } from './lib/nivel';
 
 const params = new URLSearchParams(location.search);
 
+const ceroUrl = Number(params.get('cero'));
+const ceroForzado = params.has('cero') && Number.isFinite(ceroUrl) && ceroUrl > 0 ? ceroUrl : null;
+
 export function App() {
-  const localidad = getLocalidad(params.get('localidad'));
+  const base = getLocalidad(params.get('localidad'));
+  const [localidad, setLocalidad] = useState<Localidad | undefined>(base);
+  const [terreno, setTerreno] = useState<TerrenoProcesado | null | undefined>(undefined);
   const [lectura, setLectura] = useState<LecturaNivel | null | undefined>(undefined);
   const [modelo, setModelo] = useState<Modelo | null>(null);
   const [estadoModelo, setEstadoModelo] = useState('cargando');
   const [alturaSim, setAlturaSim] = useState<number | null>(null);
-  const ceroUrl = Number(params.get('cero'));
-  const [cotaCero, setCotaCero] = useState(Number.isFinite(ceroUrl) && ceroUrl > 0 ? ceroUrl : (localidad?.hidrometro.cotaCero_m ?? 0));
+  const [cotaCero, setCotaCero] = useState(ceroForzado ?? base?.hidrometro.cotaCero_m ?? 0);
 
   useEffect(() => {
-    if (!localidad) return;
-    document.title = `Crecida del río ${localidad.rio} · ${localidad.nombre}`;
-    obtenerNivel(localidad.id).then(setLectura);
-    cargarModelo(localidad.id)
+    if (!base) return;
+    document.title = `Crecida del río ${base.rio} · ${base.nombre}`;
+    conDatosOperativos(base).then((l) => {
+      setLocalidad(l);
+      if (ceroForzado === null) setCotaCero(l.hidrometro.cotaCero_m);
+    });
+    terrenoProcesado(base.id).then(setTerreno);
+    obtenerNivel(base.id).then(setLectura);
+    cargarModelo(base.id)
       .then((m) => {
         setModelo(m);
         setEstadoModelo('listo');
       })
       .catch((e: Error) => setEstadoModelo(e.message));
-  }, [localidad]);
+  }, [base]);
 
   const actual = lectura?.altura_m ?? null;
   const altura = alturaSim ?? actual ?? localidad?.umbrales[0]?.altura_m ?? 0;
@@ -61,7 +71,7 @@ export function App() {
       <div className="aviso" role="note">
         <strong>Estimación.</strong> No reemplaza las indicaciones oficiales de Prefectura, el municipio y Defensa Civil.
       </div>
-      <Mapa localidad={localidad} modelo={modelo} cotaSim={cotaSim} cotaActual={cotaActual} />
+      {terreno !== undefined && <Mapa localidad={localidad} terreno={terreno} modelo={modelo} cotaSim={cotaSim} cotaActual={cotaActual} />}
       <Panel
         localidad={localidad}
         lectura={lectura}
@@ -71,6 +81,7 @@ export function App() {
         onCotaCero={setCotaCero}
         hectareas={hectareas}
         estadoModelo={estadoModelo}
+        metaModelo={modelo?.meta ?? null}
       />
     </div>
   );
