@@ -1,9 +1,9 @@
 // Función serverless de Vercel: GET /api/nivel?localidad=paso-de-la-patria
 // Lee la altura oficial (Prefectura) y la devuelve normalizada. La CDN la cachea
 // 30 min, así que no hace falta un cron para el MVP.
-import { getLocalidad } from '../shared/localidades/index';
-import type { LecturaNivel } from '../shared/fuentes/nivel';
-import { URL_ALTURAS_PREFECTURA, parsearAlturaPrefectura } from '../shared/fuentes/prefectura';
+import { getLocalidad } from '../shared/localidades/index.js';
+import type { LecturaNivel } from '../shared/fuentes/nivel.js';
+import { URL_ALTURAS_PREFECTURA, parsearAlturaPrefectura } from '../shared/fuentes/prefectura.js';
 
 const json = (body: unknown, status = 200, cache = 's-maxage=1800, stale-while-revalidate=3600') =>
   new Response(JSON.stringify(body), {

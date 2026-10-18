@@ -1,5 +1,6 @@
-import type { Localidad } from './types';
-import datos from './paso-de-la-patria.json';
+import type { Localidad } from './types.js';
+// `with { type: 'json' }`: la API de Vercel corre como ESM de Node sin empaquetar.
+import datos from './paso-de-la-patria.json' with { type: 'json' };
 
 // La configuración vive en JSON para que la lean tanto la app como el
 // procesamiento en Python (procesamiento/relieve.py).

@@ -1,7 +1,7 @@
-import { pasoDeLaPatria } from './paso-de-la-patria';
-import type { Localidad } from './types';
+import { pasoDeLaPatria } from './paso-de-la-patria.js';
+import type { Localidad } from './types.js';
 
-export type { Localidad, LonLat, Umbral, FuenteOficial } from './types';
+export type { Localidad, LonLat, Umbral, FuenteOficial } from './types.js';
 
 /** Registro de localidades disponibles. Agregar acá las nuevas. */
 export const localidades: Record<string, Localidad> = {
