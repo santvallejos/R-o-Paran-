@@ -1,0 +1,46 @@
+import type { Localidad } from './types';
+
+export const pasoDeLaPatria: Localidad = {
+  id: 'paso-de-la-patria',
+  nombre: 'Paso de la Patria',
+  provincia: 'Corrientes',
+  rio: 'Paraná',
+
+  centro: [-58.572, -27.312],
+  zoom: 13.4,
+  bbox: [-58.63, -27.345, -58.52, -27.285],
+  semillasRio: [
+    [-58.585, -27.297],
+    [-58.55, -27.293],
+  ],
+
+  hidrometro: {
+    nombre: 'Hidrómetro del puerto de Paso de la Patria',
+    // PROVISORIO: estimado comparando el pelo de agua del DEM (SRTM, ~47 m) con una
+    // altura típica del río. Reemplazar por el valor oficial (INA / Prefectura /
+    // Vías Navegables) y verificar el sistema de alturas. Ver docs/calibracion.md.
+    cotaCero_m: 44.0,
+    cotaCeroProvisoria: true,
+    puertoPrefectura: 'PASO DE LA PATRIA',
+  },
+
+  umbrales: [{ nombre: 'Alerta', altura_m: 6.5, color: '#f59e0b' }],
+  pronostico: { desde_m: 7.1, hasta_m: 7.5, fuente: 'Municipalidad de Paso de la Patria' },
+
+  simulador: { min_m: 5.0, max_m: 8.5, paso_m: 0.05 },
+
+  dem: {
+    nombre: 'Terrarium (SRTM/Copernicus, ~30 m)',
+    tiles: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
+    encoding: 'terrarium',
+    zoomModelo: 14,
+    maxzoom: 15,
+    attribution: 'Relieve: Mapzen Terrain Tiles (SRTM, NASA)',
+  },
+
+  fuentes: [
+    { nombre: 'Prefectura Naval — Alturas de los ríos', url: 'https://contenidosweb.prefecturanaval.gob.ar/alturas/' },
+    { nombre: 'INA — Sistema de Alerta Hidrológico', url: 'https://www.ina.gob.ar/alerta/' },
+    // TODO: sumar el canal oficial del municipio y de Defensa Civil de Corrientes.
+  ],
+};

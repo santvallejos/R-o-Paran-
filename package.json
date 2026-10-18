@@ -1,0 +1,28 @@
+{
+  "name": "mapa-crecida-parana",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Mapa 3D de crecida del río Paraná por localidad. MVP: Paso de la Patria (Corrientes).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "maplibre-gl": "^6.15.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "~5.9",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}
