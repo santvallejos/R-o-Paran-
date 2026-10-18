@@ -14,6 +14,10 @@ interface Props {
   hectareas: { sim: number; actual: number | null } | null;
   estadoModelo: 'cargando' | 'listo' | string;
   metaModelo: MetaModelo | null;
+  reproduciendo: boolean;
+  onReproducir: () => void;
+  /** En la vista 3D la leyenda va sobre la escena. */
+  conLeyenda: boolean;
 }
 
 const m = (h: number) => `${h.toFixed(2).replace('.', ',')} m`;
@@ -27,7 +31,7 @@ function fechaLegible(iso: string | null) {
   return d.toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' }) + ' h';
 }
 
-export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, onCotaCero, hectareas, estadoModelo, metaModelo }: Props) {
+export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, onCotaCero, hectareas, estadoModelo, metaModelo, reproduciendo, onReproducir, conLeyenda }: Props) {
   const [abierto, setAbierto] = useState(true);
   const { simulador: s } = localidad;
   const actual = lectura?.altura_m ?? null;
@@ -126,6 +130,9 @@ export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, on
             <span>{m(s.max_m)}</span>
           </div>
           <div className="simulador__atajos">
+            <button type="button" className="simulador__play" onClick={onReproducir} aria-pressed={reproduciendo}>
+              {reproduciendo ? '❚❚ Pausar' : '▶ Simular subida'}
+            </button>
             {actual !== null && (
               <button type="button" onClick={() => onAlturaSim(actual)}>
                 Hoy ({m(actual)})
@@ -164,7 +171,7 @@ export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, on
               )}
             </div>
           )}
-          <ul className="leyenda">
+          {conLeyenda && <ul className="leyenda">
             <li>
               <i style={{ background: rgb(COLORES.inundada) }} /> Inundado a la altura simulada
             </li>
@@ -178,7 +185,7 @@ export function Panel({ localidad, lectura, alturaSim, onAlturaSim, cotaCero, on
                 </li>
               </>
             )}
-          </ul>
+          </ul>}
         </div>
 
         <details className="detalles">

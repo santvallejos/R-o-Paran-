@@ -1,0 +1,49 @@
+.escena3d { position: absolute; inset: 0; overflow: hidden; background: #cfdbe0; touch-action: none; }
+.escena3d canvas { display: block; }
+.escena3d__estado { position: absolute; inset: 0; display: grid; place-items: center; color: #334155; font-size: 15px; padding: 24px; text-align: center; }
+.escena3d__etiqueta {
+  z-index: 0;
+  position: absolute; left: 0; top: 0; pointer-events: none; white-space: nowrap;
+  color: #fff; font-weight: 700; font-size: 13px; text-shadow: 0 1px 3px rgb(0 0 0 / 0.85);
+}
+.escena3d__tarjetas { z-index: 2; position: absolute; left: 12px; right: 12px; top: 104px; max-width: 420px; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.escena3d__tarjetas > * { pointer-events: auto; }
+.escena3d__resumen {
+  background: rgb(255 255 255 / 0.9); color: #0f172a; border-radius: 12px; padding: 8px 12px; font-size: 14px;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 0.15);
+}
+.escena3d__resumen small { display: block; color: #64748b; font-size: 12px; margin-top: 2px; }
+.escena3d__ficha {
+  position: relative;
+  background: #fff; color: #0f172a; border-radius: 12px; padding: 10px 36px 10px 12px; font-size: 14px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25); border-left: 4px solid #2563eb;
+}
+.escena3d__ficha p { margin: 0 0 4px; }
+.escena3d__ficha small { color: #64748b; font-size: 12px; }
+.escena3d__ficha button { position: absolute; right: 6px; top: 4px; border: 0; background: none; font-size: 20px; color: #64748b; }
+.escena3d__leyenda {
+  position: absolute; right: 12px; top: 104px; margin: 0; padding: 8px 10px; list-style: none;
+  background: rgb(255 255 255 / 0.9); color: #0f172a; border-radius: 10px; font-size: 12px; display: grid; gap: 3px;
+}
+.escena3d__leyenda i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.escena3d__calidad {
+  position: absolute; right: 12px; top: 104px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a;
+  border-radius: 999px; padding: 6px 12px; font-size: 13px;
+}
+.escena3d__creditos {
+  position: absolute; left: 8px; right: 8px; bottom: calc(50dvh + 4px); font-size: 10px; line-height: 1.3; color: #334155;
+  pointer-events: none; text-shadow: 0 0 3px #fff, 0 0 2px #fff;
+}
+@media (max-width: 819px) {
+  .escena3d__leyenda { display: none; }
+  .escena3d__tarjetas { right: 124px; }
+  .escena3d__resumen, .escena3d__ficha { font-size: 13px; }
+  .escena3d__creditos-largo { display: none; }
+}
+@media (min-width: 820px) {
+  .escena3d__tarjetas { right: auto; width: 420px; }
+  .escena3d__creditos-corto { display: none; }
+  .escena3d__leyenda { right: 464px; top: auto; bottom: 34px; }
+  .escena3d__calidad { right: 464px; bottom: auto; top: 104px; }
+  .escena3d__creditos { bottom: 8px; right: 464px; left: auto; max-width: 520px; text-align: right; }
+}

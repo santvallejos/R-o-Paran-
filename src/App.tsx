@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import type { LecturaNivel } from '../shared/fuentes/nivel';
 import { getLocalidad, localidades, type Localidad } from '../shared/localidades';
 import { Mapa } from './components/Mapa';
@@ -9,6 +9,9 @@ import { cargarModelo, type Modelo } from './lib/modelo';
 import { obtenerNivel } from './lib/nivel';
 
 const params = new URLSearchParams(location.search);
+// three.js sólo se descarga si se abre la vista 3D.
+const Escena3D = lazy(() => import('./vista3d/Escena3D'));
+type Vista = 'mapa' | '3d';
 
 const ceroUrl = Number(params.get('cero'));
 const ceroForzado = params.has('cero') && Number.isFinite(ceroUrl) && ceroUrl > 0 ? ceroUrl : null;
@@ -22,6 +25,8 @@ export function App() {
   const [estadoModelo, setEstadoModelo] = useState('cargando');
   const [alturaSim, setAlturaSim] = useState<number | null>(null);
   const [cotaCero, setCotaCero] = useState(ceroForzado ?? base?.hidrometro.cotaCero_m ?? 0);
+  const [vista, setVista] = useState<Vista>(params.get('vista') === '3d' ? '3d' : 'mapa');
+  const [reproduciendo, setReproduciendo] = useState(false);
 
   useEffect(() => {
     if (!base) return;
@@ -42,6 +47,32 @@ export function App() {
 
   const actual = lectura?.altura_m ?? null;
   const altura = alturaSim ?? actual ?? localidad?.umbrales[0]?.altura_m ?? 0;
+
+  // Simulación de la subida: avanza la altura desde la actual hasta el máximo del simulador.
+  useEffect(() => {
+    if (!reproduciendo || !localidad) return;
+    const { max_m } = localidad.simulador;
+    let previo = performance.now();
+    let h = altura >= max_m - 0.01 ? (actual ?? localidad.simulador.min_m) : altura;
+    let id = requestAnimationFrame(function paso(t) {
+      h = Math.min(max_m, h + ((t - previo) / 1000) * 0.25); // 25 cm por segundo
+      previo = t;
+      setAlturaSim(Math.round(h * 100) / 100);
+      if (h < max_m) id = requestAnimationFrame(paso);
+      else setReproduciendo(false);
+    });
+    return () => cancelAnimationFrame(id);
+    // Sólo arranca o frena con el botón.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reproduciendo]);
+
+  const cambiarVista = (v: Vista) => {
+    setVista(v);
+    const u = new URL(location.href);
+    if (v === '3d') u.searchParams.set('vista', '3d');
+    else u.searchParams.delete('vista');
+    history.replaceState(null, '', u);
+  };
   const cotaSim = altura + cotaCero;
   const cotaActual = actual === null ? null : actual + cotaCero;
 
@@ -71,12 +102,36 @@ export function App() {
       <div className="aviso" role="note">
         <strong>Estimación.</strong> No reemplaza las indicaciones oficiales de Prefectura, el municipio y Defensa Civil.
       </div>
-      {terreno !== undefined && <Mapa localidad={localidad} terreno={terreno} modelo={modelo} cotaSim={cotaSim} cotaActual={cotaActual} />}
+      <div className="selector-vista" role="tablist" aria-label="Tipo de vista">
+        <button type="button" role="tab" aria-selected={vista === 'mapa'} onClick={() => cambiarVista('mapa')}>
+          Mapa
+        </button>
+        <button type="button" role="tab" aria-selected={vista === '3d'} onClick={() => cambiarVista('3d')}>
+          Vista 3D
+        </button>
+      </div>
+      {vista === 'mapa' && terreno !== undefined && (
+        <Mapa localidad={localidad} terreno={terreno} modelo={modelo} cotaSim={cotaSim} cotaActual={cotaActual} />
+      )}
+      {vista === '3d' &&
+        (modelo ? (
+          <Suspense fallback={<div className="cargando-3d">Cargando la vista 3D…</div>}>
+            <Escena3D localidad={localidad} modelo={modelo} cotaSim={cotaSim} cotaActual={cotaActual} cotaCero={cotaCero} />
+          </Suspense>
+        ) : (
+          <div className="cargando-3d">{estadoModelo === 'cargando' ? 'Calculando el modelo…' : estadoModelo}</div>
+        ))}
       <Panel
         localidad={localidad}
         lectura={lectura}
         alturaSim={altura}
-        onAlturaSim={setAlturaSim}
+        onAlturaSim={(h) => {
+          setReproduciendo(false);
+          setAlturaSim(h);
+        }}
+        reproduciendo={reproduciendo}
+        onReproducir={() => setReproduciendo(!reproduciendo)}
+        conLeyenda={vista === 'mapa'}
         cotaCero={cotaCero}
         onCotaCero={setCotaCero}
         hectareas={hectareas}

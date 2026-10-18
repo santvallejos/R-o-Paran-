@@ -17,7 +17,11 @@ MVP: **Paso de la Patria (Corrientes)**. Diseñada para sumar otras localidades 
 - **Simulador**: control deslizante (5 → 8,5 m) que muestra en rojo lo que se suma si el río sube y en verde lo que se libera si baja.
   Atajos a "Hoy", "Alerta" y "Pico pronosticado".
 - **Conectividad hidráulica**: sólo se inunda lo conectado al río, no cualquier pozo más bajo.
-- Mapa 3D (MapLibre + relieve exagerado ×4), satélite / calles, vista 2D, ubicación del usuario.
+- Mapa (MapLibre + relieve exagerado ×4), satélite / calles, vista 2D, ubicación del usuario.
+- **Vista 3D** (three.js): maqueta estilizada del pueblo con el monte (ESA WorldCover) y los 9.812 edificios de
+  Overture Maps. El agua sube con el simulador y los edificios alcanzados se pintan. Tocando un edificio, se ve
+  a qué altura del río le llega el agua. **▶ Simular subida** anima la crecida en las dos vistas. Ver
+  [docs/vista3d.md](docs/vista3d.md).
 - Pensado primero para el celular (hoja inferior desplegable).
 
 ## Cómo correrlo
@@ -77,6 +81,7 @@ src/lib/inundacion.ts   algoritmo de inundación con conectividad
 src/lib/modelo.worker.ts cálculo fuera del hilo principal
 src/lib/capa.ts         pintado de la capa (inundado / se suma / se libera)
 src/components/         Mapa (MapLibre) y Panel (nivel, simulador, leyenda)
+src/vista3d/            Vista 3D (three.js, se carga sólo al abrirla)
 public/data/nivel/      lecturas manuales de respaldo
 docs/                   contexto del proyecto y calibración
 ```
@@ -93,7 +98,8 @@ docs/                   contexto del proyecto y calibración
 
 ## Limitaciones conocidas (leer antes de difundir)
 
-- **Cota del cero del hidrómetro provisoria** (44,00 m). Es el dato que más cambia el resultado. Ver `docs/calibracion.md`.
+- **Cota del cero del hidrómetro preliminar** (40,50 m, calibrada con los impactos observados el 18/10/2026; antes 44 m).
+  Es el dato que más cambia el resultado. Ver `docs/calibracion.md`.
 - **Relieve de ~30 m (Copernicus)**: la corrección por cobertura es por clase (valores fijos por árbol, arbusto o edificio),
   no una medición. FABDEM o un vuelo con drone la reemplazan con `--dem`.
 - **Defensas**: la tabla `defensas` está lista pero vacía. Hasta cargarlas, el modelo no sabe dónde están los terraplenes.

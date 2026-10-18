@@ -12,7 +12,7 @@
   ],
   "hidrometro": {
     "nombre": "Hidrómetro del puerto de Paso de la Patria",
-    "cotaCero_m": 44.0,
+    "cotaCero_m": 40.5,
     "cotaCeroProvisoria": true,
     "puertoPrefectura": "PASO DE LA PATRIA"
   },
@@ -37,7 +37,8 @@
     "correccionCobertura_m": { "arboles": 3.0, "arbustos": 1.0, "edificado": 2.0 },
     "filtroMediana_px": 5,
     "nivelesZonas_m": { "desde": 5.0, "hasta": 8.5, "paso": 0.1 },
-    "simplificarZonas_m": 12
+    "simplificarZonas_m": 12,
+    "escena3d": { "densidadArboles": 0.55, "maxArboles": 120000 }
   },
   "fuentes": [
     { "nombre": "Prefectura Naval — Alturas de los ríos", "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/" },

@@ -40,8 +40,15 @@ button { font: inherit; cursor: pointer; }
 }
 
 .mapa, .mapa__lienzo { position: absolute; inset: 0; }
+.selector-vista {
+  position: absolute; z-index: 3; left: 12px; top: 56px; display: flex; padding: 3px; gap: 2px;
+  background: var(--panel); border: 1px solid var(--borde); border-radius: 999px; box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+}
+.selector-vista button { border: 0; background: none; color: var(--texto); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 600; }
+.selector-vista button[aria-selected='true'] { background: var(--acento); color: #fff; }
+.cargando-3d { position: absolute; inset: 0; display: grid; place-items: center; background: #cfdbe0; color: #334155; }
 .mapa__controles {
-  position: absolute; z-index: 2; left: 12px; top: 56px;
+  position: absolute; z-index: 2; left: 12px; top: 104px;
   display: flex; flex-direction: column; gap: 8px;
 }
 .mapa__controles button, .simulador__atajos button {
@@ -111,6 +118,7 @@ button { font: inherit; cursor: pointer; }
 .simulador__escala { display: flex; justify-content: space-between; font-size: 12px; color: var(--tenue); }
 .simulador__atajos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .simulador__atajos button { box-shadow: none; }
+.simulador__atajos .simulador__play { background: var(--acento); color: #fff; border-color: var(--acento); font-weight: 600; }
 
 .leyenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
 .leyenda i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; opacity: 0.85; }

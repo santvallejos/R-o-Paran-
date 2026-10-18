@@ -24,7 +24,7 @@ from pathlib import Path
 import numpy as np
 from rasterio.enums import Resampling
 
-from relieve import correcciones, exportar, fuentes, supabase
+from relieve import correcciones, escena3d, exportar, fuentes, supabase
 from relieve.grilla import Grilla, lonlat_a_pixel
 from relieve.inundacion import calcular_umbrales
 
@@ -59,6 +59,7 @@ def main() -> int:
     ap.add_argument("--nombre-dem", help="Nombre de la fuente del DEM propio (para mostrar en la app)")
     ap.add_argument("--sin-correccion-cobertura", action="store_true")
     ap.add_argument("--sin-tiles", action="store_true", help="No regenerar los tiles de relieve 3D")
+    ap.add_argument("--sin-escena3d", action="store_true", help="No generar árboles, edificios y cobertura para la vista 3D")
     ap.add_argument("--subir", action="store_true", help="Cargar la versión y sus zonas en Supabase")
     args = ap.parse_args()
 
@@ -106,9 +107,9 @@ def main() -> int:
 
     # 2. Correcciones
     pasos = []
+    log("Bajando cobertura del suelo (ESA WorldCover 10 m)…")
+    cob = fuentes.a_grilla(fuentes.worldcover(lectura_bounds, cache), grande, Resampling.mode, np.uint8, nodata=0)
     if not args.sin_correccion_cobertura:
-        log("Bajando cobertura del suelo (ESA WorldCover 10 m)…")
-        cob = fuentes.a_grilla(fuentes.worldcover(lectura_bounds, cache), grande, Resampling.mode, np.uint8, nodata=0)
         elev = correcciones.corregir_cobertura(elev, cob, agua, p["correccionCobertura_m"])
         pasos.append({"correccion_cobertura": p["correccionCobertura_m"], "fuente": "ESA WorldCover 2021"})
     elev = correcciones.filtrar_ruido(elev, agua, p["filtroMediana_px"])
@@ -146,6 +147,18 @@ def main() -> int:
     exportar.guardar_geotiff(salida / "dem_corregido.tif", grande, elev)
     exportar.guardar_geotiff(salida / "umbral.tif", modelo, umbral)
     log(f"Modelo para la app en {publico.relative_to(RAIZ)}")
+
+    if not args.sin_escena3d:
+        e3 = publico / "escena"
+        e3.mkdir(parents=True, exist_ok=True)
+        cfg3 = p.get("escena3d", {})
+        escena3d.cobertura_png(e3, cob[fil, col])
+        n_arb = escena3d.arboles(e3, modelo, cob[fil, col], cauce, cfg3.get("densidadArboles", 0.55), cfg3.get("maxArboles", 120000))
+        log("Bajando edificios (Overture Maps)…")
+        info = escena3d.edificios(e3, modelo, fuentes.edificios_overture(loc["bbox"], cache), elev_m, umbral)
+        log(f"Escena 3D: {n_arb} árboles, {info['edificios']} edificios (Overture {info['release_overture']})")
+        meta["escena3d"] = {"arboles": n_arb, **info}
+        (publico / "modelo.json").write_text(json.dumps({**json.loads((publico / "modelo.json").read_text()), "escena3d": meta["escena3d"]}, ensure_ascii=False, indent=2))
 
     if not args.sin_tiles:
         zmin, zmax = p["zoomTiles"]

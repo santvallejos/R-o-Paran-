@@ -100,3 +100,58 @@ def a_grilla(ruta: Path, grilla: Grilla, resampling: Resampling, dtype=np.float3
             resampling=resampling,
         )
     return salida
+
+
+OVERTURE_BUCKET = "overturemaps-us-west-2"
+
+
+def _s3_overture():
+    """S3 anónimo de Overture Maps, respetando el proxy HTTPS del entorno si hay."""
+    import os
+    from urllib.parse import urlparse
+
+    import pyarrow.fs as pafs
+
+    proxy = urlparse(os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy") or "")
+    opciones = {"scheme": "http", "host": proxy.hostname, "port": proxy.port} if proxy.hostname else None
+    return pafs.S3FileSystem(anonymous=True, region="us-west-2", proxy_options=opciones)
+
+
+def edificios_overture(bounds: list[float], cache: Path, release: str | None = None) -> Path:
+    """
+    Huellas de edificios de Overture Maps (combina OpenStreetMap, Microsoft y Google).
+    Lee sólo los bloques del GeoParquet que caen en el área (filtro por bbox).
+    Guarda un GeoJSON en caché.
+    """
+    destino = cache / "edificios_overture.geojson"
+    if destino.exists():
+        return destino
+    import json
+
+    import pyarrow.compute as pc
+    import pyarrow.dataset as ds
+    import pyarrow.fs as pafs
+    import shapely
+
+    fs = _s3_overture()
+    if release is None:
+        releases = fs.get_file_info(pafs.FileSelector(f"{OVERTURE_BUCKET}/release/"))
+        release = sorted(r.base_name for r in releases if r.type == pafs.FileType.Directory)[-1]
+    base = f"{OVERTURE_BUCKET}/release/{release}/theme=buildings/type=building/"
+    archivos = [f.path for f in fs.get_file_info(pafs.FileSelector(base)) if f.type == pafs.FileType.File]
+    oeste, sur, este, norte = bounds
+    filtro = (
+        (pc.field("bbox", "xmin") > oeste) & (pc.field("bbox", "xmax") < este)
+        & (pc.field("bbox", "ymin") > sur) & (pc.field("bbox", "ymax") < norte)
+    )
+    tabla = ds.dataset(archivos, filesystem=fs, format="parquet").to_table(
+        columns=["id", "height", "num_floors", "geometry"], filter=filtro
+    )
+    geoms = shapely.from_wkb(tabla.column("geometry").to_pylist())
+    features = [
+        {"type": "Feature", "geometry": shapely.geometry.mapping(g), "properties": {"id": i, "altura_m": h, "pisos": n}}
+        for i, h, n, g in zip(tabla.column("id").to_pylist(), tabla.column("height").to_pylist(), tabla.column("num_floors").to_pylist(), geoms)
+    ]
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    destino.write_text(json.dumps({"type": "FeatureCollection", "release": release, "features": features}))
+    return destino

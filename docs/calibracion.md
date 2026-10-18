@@ -6,9 +6,31 @@
 cota_agua (m) = altura_hidrometro (m) + cota_cero (m)
 ```
 
-Valor actual en `shared/localidades/paso-de-la-patria.ts`: **44,00 m, provisorio**.
+Valor actual (en `shared/localidades/paso-de-la-patria.json` y en Supabase): **40,50 m, preliminar** (antes 44,00 m).
 
-Cómo se estimó: el SRTM (febrero de 2000) registra el pelo de agua del Paraná frente a Paso de la Patria en ~47 m,
+### Calibración por impactos observados (18/10/2026)
+
+Al cruzar los 9.812 edificios de Overture Maps con el modelo, se vio que 44 m no se sostenía.
+
+| Cero (m) | Edificios con agua a 7,33 m | A 8,00 m | Pelo de agua del DEM (45 m) en la escala |
+|---|---|---|---|
+| 44,0 | 4.749 | 5.948 | 1,0 m |
+| 42,0 | 606 | 1.510 | 3,0 m |
+| 41,0 | 213 | 467 | 4,0 m |
+| **40,5** | **134** | **295** | **4,5 m** |
+| 40,0 | 101 | 150 | 5,0 m |
+
+Con el río entre 7,15 y 7,33 m (17–18/10), Defensa Civil registraba en Paso de la Patria **una sola familia
+evacuada (4 personas)**, y el municipio preveía hasta 25 familias a reubicar. Con 44 m, el modelo ponía agua en
+la mitad del pueblo. Con 40,5 m la deja en ~130 edificios, casi todos sobre la costa e islas, que son quintas y
+casas de fin de semana. Además, un pelo de agua de ~4,5 m en la escala es razonable para el río medio de
+2011–2015 (fechas de Copernicus).
+
+**Esto no reemplaza el dato oficial.** Es el valor que mejor coincide con lo observado.
+
+### Estimación inicial (descartada)
+
+El primer valor (44 m) salió de esto: el SRTM (febrero de 2000) registra el pelo de agua del Paraná frente a Paso de la Patria en ~47 m,
 y Copernicus GLO-30 (2011–2015) en 45,00 m. Con 44 m, eso equivale a ~3 m y ~1 m en la escala, alturas plausibles
 para esas épocas. Es una suposición con un margen de ±1–2 m: hay que reemplazarla por el dato oficial.
 
