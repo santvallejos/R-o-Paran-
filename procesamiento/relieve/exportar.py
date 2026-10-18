@@ -41,9 +41,11 @@ def guardar_png(rgb: np.ndarray, ruta: Path) -> None:
     Image.fromarray(rgb, "RGB").save(ruta, optimize=True)
 
 
-def modelo_para_app(destino: Path, grilla: Grilla, elev: np.ndarray, umbral: np.ndarray, cota_cauce: float, meta: dict) -> None:
+def modelo_para_app(destino: Path, grilla: Grilla, elev: np.ndarray, umbral: np.ndarray, cauce: np.ndarray, cota_cauce: float, meta: dict) -> None:
     guardar_png(a_terrarium(elev), destino / "elev.png")
     guardar_png(a_terrarium(umbral), destino / "umbral.png")
+    # Agua permanente (río y lagunas): no se pinta ni se cuenta como inundación.
+    Image.fromarray(np.where(cauce, 255, 0).astype(np.uint8), "L").save(destino / "cauce.png", optimize=True)
     (destino / "modelo.json").write_text(
         json.dumps(
             {

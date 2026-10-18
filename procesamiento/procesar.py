@@ -129,6 +129,7 @@ def main() -> int:
     umbral = calcular_umbrales(elev_m, rio_modelo)
     log(f"  listo en {time.time() - t:.1f} s")
     cauce = agua[fil, col]
+    # Respaldo para apps viejas sin cauce.png: todo lo que está al nivel del río.
     cota_cauce = cota_agua + 0.25
 
     procesado = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -141,7 +142,7 @@ def main() -> int:
     }
 
     # 4. Salidas
-    exportar.modelo_para_app(publico, modelo, elev_m, umbral, cota_cauce, meta)
+    exportar.modelo_para_app(publico, modelo, elev_m, umbral, cauce, cota_cauce, meta)
     exportar.guardar_geotiff(salida / "dem_corregido.tif", grande, elev)
     exportar.guardar_geotiff(salida / "umbral.tif", modelo, umbral)
     log(f"Modelo para la app en {publico.relative_to(RAIZ)}")

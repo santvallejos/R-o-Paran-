@@ -32,8 +32,9 @@ describe('calcularUmbrales', () => {
 describe('superficieInundada', () => {
   it('cuenta hectáreas fuera del cauce', () => {
     const u = calcularUmbrales(elev, 4, 2, [0]);
+    const cauce = Uint8Array.from(elev, (e) => (e === 0 ? 1 : 0));
     // a cota 2.5 se inunda sólo la celda de cota 2 (el cauce, cota 0, no cuenta)
-    expect(superficieInundada(u, elev, 2.5, 0.5, 100)).toBe(1);
-    expect(superficieInundada(u, elev, 5, 0.5, 100)).toBe(6);
+    expect(superficieInundada(u, cauce, 2.5, 100)).toBe(1);
+    expect(superficieInundada(u, cauce, 5, 100)).toBe(6);
   });
 });

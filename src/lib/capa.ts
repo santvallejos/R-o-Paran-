@@ -9,18 +9,18 @@ export const COLORES = {
 /**
  * Pinta la capa de agua para la cota simulada. Si hay cota actual, distingue
  * lo que se suma (rojo) y lo que se libera (verde) respecto de hoy.
- * Las celdas del cauce permanente quedan transparentes (ya se ven en el mapa base).
+ * El agua permanente (río y lagunas) queda transparente: ya se ve en el mapa base.
  */
 export function pintarCapa(m: Modelo, cotaSim: number, cotaActual: number | null, destino?: ImageData): ImageData {
   const img = destino ?? new ImageData(m.ancho, m.alto);
   const px = img.data;
-  const { umbral, elev, cotaCauce } = m;
+  const { umbral, elev, cauce } = m;
   for (let i = 0; i < umbral.length; i++) {
     const o = i * 4;
     const u = umbral[i];
     const sim = u <= cotaSim;
     const hoy = cotaActual !== null && u <= cotaActual;
-    if (elev[i] <= cotaCauce || (!sim && !hoy)) {
+    if (cauce[i] || (!sim && !hoy)) {
       px[o + 3] = 0;
       continue;
     }

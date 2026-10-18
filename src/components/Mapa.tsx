@@ -24,8 +24,9 @@ interface Props {
 
 function estilo(loc: Localidad, t: TerrenoProcesado | null): StyleSpecification {
   const dem = t
-    ? { tiles: [t.tiles], encoding: t.encoding, minzoom: t.minzoom, maxzoom: t.maxzoom, bounds: t.bounds, attribution: `Relieve: ${t.fuente} (procesado), ESA WorldCover` }
-    : { tiles: [loc.dem.tiles], encoding: loc.dem.encoding, maxzoom: loc.dem.maxzoom, attribution: loc.dem.attribution };
+    ? { tiles: [t.tiles], encoding: t.encoding, minzoom: t.minzoom, maxzoom: t.maxzoom, bounds: t.bounds }
+    : { tiles: [loc.dem.tiles], encoding: loc.dem.encoding, maxzoom: loc.dem.maxzoom };
+  const atribucion = t ? `Relieve: ${t.fuente} procesado, ESA WorldCover` : loc.dem.attribution;
   return {
     version: 8,
     sources: {
@@ -43,9 +44,9 @@ function estilo(loc: Localidad, t: TerrenoProcesado | null): StyleSpecification 
         maxzoom: 19,
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       },
-      terreno: { type: 'raster-dem', tileSize: 256, ...dem },
+      terreno: { type: 'raster-dem', tileSize: 256, ...dem, attribution: atribucion },
       // MapLibre recomienda una fuente aparte para el sombreado.
-      sombreado: { type: 'raster-dem', tileSize: 256, ...dem, attribution: undefined },
+      sombreado: { type: 'raster-dem', tileSize: 256, ...dem },
     },
     layers: [
       { id: 'satelite', type: 'raster', source: 'satelite' },

@@ -47,7 +47,7 @@ export function App() {
 
   const hectareas = useMemo(() => {
     if (!modelo) return null;
-    const f = (c: number) => superficieInundada(modelo.umbral, modelo.elev, c, modelo.cotaCauce, modelo.celda_m);
+    const f = (c: number) => superficieInundada(modelo.umbral, modelo.cauce, c, modelo.celda_m);
     return { sim: f(cotaSim), actual: cotaActual === null ? null : f(cotaActual) };
   }, [modelo, cotaSim, cotaActual]);
 

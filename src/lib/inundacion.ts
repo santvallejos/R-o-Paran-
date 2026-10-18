@@ -99,11 +99,11 @@ class MinHeap {
   }
 }
 
-/** Superficie (ha) inundada a la cota `cota`, sin contar el cauce permanente. */
-export function superficieInundada(umbral: Float32Array, elev: Float32Array, cota: number, cotaCauce: number, celda_m: number): number {
+/** Superficie (ha) inundada a la cota `cota`, sin contar el agua permanente (`cauce[i] = 1`). */
+export function superficieInundada(umbral: Float32Array, cauce: Uint8Array, cota: number, celda_m: number): number {
   let celdas = 0;
   for (let i = 0; i < umbral.length; i++) {
-    if (umbral[i] <= cota && elev[i] > cotaCauce) celdas++;
+    if (umbral[i] <= cota && !cauce[i]) celdas++;
   }
   return (celdas * celda_m * celda_m) / 10_000;
 }
