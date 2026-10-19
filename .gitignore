@@ -8,3 +8,6 @@ procesamiento/salida/*/zonas.geojson
 __pycache__
 .pytest_cache
 .venv
+
+# Worktrees y estado local de Claude Code
+.claude/
