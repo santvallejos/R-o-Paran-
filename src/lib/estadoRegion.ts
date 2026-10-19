@@ -1,6 +1,6 @@
 // Estado de todas las localidades para el mapa regional: última altura y en qué rango
-// cae respecto de los umbrales (alerta / evacuación). Dos consultas en total a Supabase,
-// sin importar cuántas localidades haya.
+// cae respecto de los umbrales (alerta / evacuación). Una sola llamada a /api/estado (o, si
+// falla, dos consultas a Supabase), sin importar cuántas localidades haya.
 import type { Localidad, Umbral } from '../../shared/localidades';
 import { consultar, supabaseConfigurado } from './supabase';
 
@@ -56,14 +56,53 @@ interface FilaUmbrales {
   umbrales: Umbral[] | null;
 }
 
+/** Fila de /api/estado (api/estado.ts): altura de Prefectura y sus umbrales oficiales. */
+interface FilaApi {
+  altura_m: number;
+  fecha: string | null;
+  alerta_m: number | null;
+  evacuacion_m: number | null;
+}
+
 /**
- * Última lectura y estado de cada localidad, por id. Sin Supabase (o si falla) todas
- * quedan "sin dato"; si sólo fallan los umbrales operativos se usan los del repo.
+ * Estado desde /api/estado, que la CDN de Vercel cachea 30 min: así miles de visitas no
+ * llegan ni a Prefectura ni a Supabase. Devuelve null si la API no responde (p. ej. en
+ * `npm run dev`, donde no hay funciones), para caer a Supabase.
+ */
+async function desdeApi(locs: Localidad[]): Promise<Record<string, EstadoLocalidad> | null> {
+  try {
+    const res = await fetch('/api/estado', { headers: { accept: 'application/json' } });
+    if (!res.ok || !res.headers.get('content-type')?.includes('json')) return null;
+    const filas = (await res.json()) as Record<string, FilaApi>;
+    return Object.fromEntries(
+      locs.map((l): [string, EstadoLocalidad] => {
+        const f = filas[l.id];
+        if (!f) return [l.id, { altura_m: null, fecha: null, estado: 'sin-dato' }];
+        // Umbrales oficiales de la fila de Prefectura; si no vienen, los del repo.
+        const oficiales = [
+          ...(f.alerta_m != null ? [{ nombre: 'Alerta', altura_m: f.alerta_m, color: '' }] : []),
+          ...(f.evacuacion_m != null ? [{ nombre: 'Evacuación', altura_m: f.evacuacion_m, color: '' }] : []),
+        ];
+        return [l.id, { altura_m: f.altura_m, fecha: f.fecha, estado: clasificar(f.altura_m, oficiales.length ? oficiales : l.umbrales) }];
+      }),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Última lectura y estado de cada localidad, por id. Primero la API cacheada; si falla,
+ * Supabase. Sin ninguna de las dos, todas quedan "sin dato"; si sólo fallan los umbrales
+ * operativos de Supabase se usan los del repo.
  */
 export async function obtenerEstadoRegion(locs: Localidad[]): Promise<Record<string, EstadoLocalidad>> {
   const vacio = (): EstadoLocalidad => ({ altura_m: null, fecha: null, estado: 'sin-dato' });
   const resultado: Record<string, EstadoLocalidad> = Object.fromEntries(locs.map((l) => [l.id, vacio()]));
-  if (!supabaseConfigurado || locs.length === 0) return resultado;
+  if (locs.length === 0) return resultado;
+  const api = await desdeApi(locs);
+  if (api) return api;
+  if (!supabaseConfigurado) return resultado;
 
   // Los ids sólo tienen [a-z0-9-] (lo exige la tabla), igual se codifican por las dudas.
   const ids = locs.map((l) => encodeURIComponent(l.id)).join(',');

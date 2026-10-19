@@ -7,35 +7,10 @@ import type { Localidad } from '../../shared/localidades';
 import { pintarCapa } from '../lib/capa';
 import type { TerrenoProcesado } from '../lib/localidad';
 import type { Modelo } from '../lib/modelo';
+import { agregarCalles, aplicarBase, CAPAS_BASE, FUENTES_BASE, type Base } from '../lib/mapaBase';
 
 // El bundler no sigue el worker interno de MapLibre: se le indica la URL explícita.
 maplibregl.setWorkerUrl(urlWorkerMapa);
-
-export type Base = 'satelite' | 'calles';
-
-/** Fuentes raster de las dos bases (satélite y calles); las comparte el mapa regional. */
-export const FUENTES_BASE = {
-  satelite: {
-    type: 'raster',
-    tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-    tileSize: 256,
-    maxzoom: 19,
-    attribution: 'Imágenes © Esri, Maxar, Earthstar Geographics',
-  },
-  calles: {
-    type: 'raster',
-    tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-    tileSize: 256,
-    maxzoom: 19,
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  },
-} satisfies StyleSpecification['sources'];
-
-/** Capas de las bases: satélite visible y calles oculta hasta que se alterne. */
-export const CAPAS_BASE = [
-  { id: 'satelite', type: 'raster', source: 'satelite' },
-  { id: 'calles', type: 'raster', source: 'calles', layout: { visibility: 'none' } },
-] satisfies StyleSpecification['layers'];
 
 interface Props {
   localidad: Localidad;
@@ -93,6 +68,8 @@ export function Mapa({ localidad, terreno, modelo, cotaSim, cotaActual }: Props)
   const buffer = useRef<ImageData | null>(null);
   const [listo, setListo] = useState(false);
   const [base, setBase] = useState<Base>('satelite');
+  // Ids de las capas de calles (OpenFreeMap), que se agregan cuando el mapa termina de cargar.
+  const [calles, setCalles] = useState<string[]>([]);
   const [tresD, setTresD] = useState(true);
 
   useEffect(() => {
@@ -112,12 +89,17 @@ export function Mapa({ localidad, terreno, modelo, cotaSim, cotaActual }: Props)
     m.setPadding(window.innerWidth < 820 ? { top: 40, bottom: window.innerHeight * 0.4, left: 0, right: 0 } : { top: 40, bottom: 0, left: 0, right: 420 });
     m.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
     m.addControl(new maplibregl.GeolocateControl({ trackUserLocation: false }), 'top-right');
-    m.on('load', () => setListo(true));
+    m.on('load', () => {
+      setListo(true);
+      // Calles ocultas debajo del sombreado; se muestran al alternar la base.
+      agregarCalles(m, false, 'sombreado').then(setCalles);
+    });
     mapa.current = m;
     return () => {
       m.remove();
       mapa.current = null;
       setListo(false);
+      setCalles([]);
     };
     // Sólo se recrea el mapa si cambia la localidad o su relieve, no por datos operativos.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -171,9 +153,8 @@ export function Mapa({ localidad, terreno, modelo, cotaSim, cotaActual }: Props)
   useEffect(() => {
     const m = mapa.current;
     if (!m || !listo) return;
-    m.setLayoutProperty('satelite', 'visibility', base === 'satelite' ? 'visible' : 'none');
-    m.setLayoutProperty('calles', 'visibility', base === 'calles' ? 'visible' : 'none');
-  }, [base, listo]);
+    aplicarBase(m, base, calles);
+  }, [base, listo, calles]);
 
   useEffect(() => {
     const m = mapa.current;

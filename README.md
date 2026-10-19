@@ -1,21 +1,24 @@
 # Mapa de crecida del río Paraná
 
 Web informativa que muestra, sobre un mapa 3D, **qué zonas se inundan a cada altura del río**.
-MVP: **Paso de la Patria (Corrientes)**. Diseñada para sumar otras localidades del Paraná con un archivo de configuración.
+Localidades: **Paso de la Patria** e **Itatí** (Corrientes), con un mapa regional del NEA para elegirlas. Se suman otras
+con un archivo de configuración (catálogo en [docs/localidades-nea.md](docs/localidades-nea.md)).
 
 > Estimación. No reemplaza las indicaciones oficiales de Prefectura, el municipio y Defensa Civil.
 
-**En línea:** https://rio-parana-topaz.vercel.app · Vista 3D: https://rio-parana-topaz.vercel.app/?vista=3d
+**En línea:** https://rio-parana-topaz.vercel.app · Itatí en 3D: https://rio-parana-topaz.vercel.app/?localidad=itati&vista=3d
 
 Se publica solo en Vercel con cada push a `claude/mvp-paso-de-la-patria` (rama de producción del proyecto `rio-parana`).
 
 ## Qué hace
 
-- **Altura oficial del río** con fecha, hora, estado y fuente (Prefectura Naval). Una Edge Function de Supabase la
-  registra cada 2 horas, con historial. Si Supabase no responde, la app prueba `GET /api/nivel` y después
-  `public/data/nivel/<localidad>.json` (carga manual).
-- **Gráfico de los últimos 30 días** y **crecidas de referencia** (1983: 9,54 m · 1998: 8,69 m · 2016: 7,78 m ·
-  2023: 7,44 m), con datos del INA (API pública a5, sin token).
+- **Altura oficial del río** con fecha, hora, estado y fuente (Prefectura Naval). La app la lee de `GET /api/nivel`
+  (cacheada 30 min en la CDN de Vercel); si falla, de Supabase (una Edge Function la registra cada 2 horas, con
+  historial) y después de `public/data/nivel/<localidad>.json` (carga manual).
+- **Mapa regional del NEA** con buscador y el estado de cada localidad (`GET /api/estado`: una sola consulta a
+  Prefectura cada 30 min para todas).
+- **Gráfico de los últimos 30 días** y **crecidas de referencia** de cada localidad (por ejemplo, en Paso: 1983 9,54 m ·
+  1998 8,69 m · 2016 7,78 m · 2023 7,44 m), con datos del INA (API pública a5, sin token).
 - **Relieve procesado** (`procesamiento/`): Copernicus GLO-30 corregido por cobertura del suelo, sin ruido y con
   las defensas como barreras. De ahí salen el modelo precalculado, los tiles del relieve 3D y las zonas
   inundables por nivel, que se guardan en Supabase (PostGIS).
@@ -23,7 +26,7 @@ Se publica solo en Vercel con cada push a `claude/mvp-paso-de-la-patria` (rama d
 - **Simulador**: control deslizante (5 → 9,6 m, para llegar al pico de 1983) que muestra en rojo lo que se suma si el río sube y en verde lo que se libera si baja.
   Atajos a "Hoy", "Alerta" y "Pico pronosticado".
 - **Conectividad hidráulica**: sólo se inunda lo conectado al río, no cualquier pozo más bajo.
-- Mapa (MapLibre + relieve exagerado ×4), satélite / calles, vista 2D, ubicación del usuario.
+- Mapa (MapLibre + relieve exagerado ×4), satélite (Esri) / calles (OpenFreeMap), vista 2D, ubicación del usuario.
 - **Vista 3D** (three.js): maqueta estilizada del pueblo con el monte (ESA WorldCover) y los 9.812 edificios de
   Overture Maps. El agua sube con el simulador y los edificios alcanzados se pintan. Tocando un edificio, se ve
   a qué altura del río le llega el agua. **▶ Simular subida** anima la crecida en las dos vistas. Ver
@@ -84,7 +87,9 @@ shared/fuentes/         formato de lectura de nivel (el parser de Prefectura viv
 procesamiento/          pipeline de relieve en Python (rasterio, scipy, shapely)
 supabase/               migraciones, seed y Edge Function registrar-nivel
 public/data/relieve/    salida del pipeline: modelo precalculado y tiles 3D
-api/nivel.ts            función serverless de respaldo: altura oficial normalizada (cache CDN 30 min)
+api/nivel.ts            altura oficial normalizada de una localidad (cache CDN 30 min)
+api/estado.ts           altura y umbrales de todas las localidades para el mapa regional (cache CDN 30 min)
+api/historico.ts        serie diaria del INA de los últimos 30 días (cache CDN 6 h)
 src/lib/supabase.ts     lectura de Supabase (PostgREST, clave publicable)
 src/lib/terreno.ts      descarga y decodificación del DEM (terrarium / mapbox terrain-RGB)
 src/lib/inundacion.ts   algoritmo de inundación con conectividad
@@ -118,6 +123,8 @@ Ejemplo completo: Itatí (`shared/localidades/itati.json`), piloto de la ampliac
 6. Crear `public/data/nivel/<id>.json` como respaldo y abrir `?localidad=<id>`.
 
 ## Limitaciones conocidas (leer antes de difundir)
+
+Qué datos faltan y cómo cargarlos para mejorar la estimación: [MEJORAS-DATOS.md](MEJORAS-DATOS.md).
 
 - **Cota del cero del hidrómetro provisoria** (44,00 m, estimada con los hidrómetros del INA de Itatí y Corrientes,
   que tienen cero IGN; antes 40,5 m, calibrada con edificios y descartada). Falta el dato oficial de Paso de la Patria.

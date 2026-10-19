@@ -37,13 +37,14 @@ async function desdeUrl(url: string): Promise<LecturaNivel | null> {
 }
 
 /**
- * Fuentes en orden: Supabase (historial), la API en vivo y el JSON manual del repo.
- * Devuelve la primera con dato; si ninguna tiene, una lectura vacía para mostrar el aviso.
+ * Fuentes en orden: la API en vivo (cacheada 30 min en la CDN de Vercel, así las visitas no
+ * cargan a Supabase), Supabase (historial que registra la Edge Function) y el JSON manual
+ * del repo. Devuelve la primera con dato; si ninguna tiene, una lectura vacía para mostrar el aviso.
  */
 export async function obtenerNivel(localidad: string): Promise<LecturaNivel | null> {
   const intentos = [
-    () => desdeSupabase(localidad),
     () => desdeUrl(`/api/nivel?localidad=${localidad}`),
+    () => desdeSupabase(localidad),
     () => desdeUrl(`/data/nivel/${localidad}.json`),
   ];
   for (const intento of intentos) {

@@ -6,7 +6,9 @@ import { localidades, type Localidad } from '../../shared/localidades';
 import { ESTILO_ESTADO, normalizar, obtenerEstadoRegion, type EstadoLocalidad } from '../lib/estadoRegion';
 import { alClicNavegar, urlDeLocalidad } from '../lib/navegacion';
 // Importar Mapa también deja configurado el worker de MapLibre (setWorkerUrl).
-import { CAPAS_BASE, FUENTES_BASE, type Base } from './Mapa';
+import { agregarCalles, aplicarBase, CAPAS_BASE, FUENTES_BASE, type Base } from '../lib/mapaBase';
+// Mapa.tsx configura el worker de MapLibre al importarse; el mapa regional lo necesita igual.
+import './Mapa';
 
 interface Props {
   /** Abre una localidad. */
@@ -45,8 +47,10 @@ export function MapaRegion({ onElegir, desconocida }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<maplibregl.Map | null>(null);
   const [listo, setListo] = useState(false);
-  // Al nivel regional las calles de OSM muestran nombres y límites provinciales.
+  // Al nivel regional las calles muestran nombres y límites provinciales.
   const [base, setBase] = useState<Base>('calles');
+  // Ids de las capas de calles (OpenFreeMap), que se agregan cuando el mapa termina de cargar.
+  const [calles, setCalles] = useState<string[]>([]);
   // undefined: consultando; después, el estado por id (gris si no hay datos).
   const [estados, setEstados] = useState<Record<string, EstadoLocalidad> | undefined>(undefined);
   const [filtro, setFiltro] = useState('');
@@ -78,21 +82,25 @@ export function MapaRegion({ onElegir, desconocida }: Props) {
     // fitBounds en lugar de un zoom fijo: en el celular el NEA entero no entra a 6,5.
     mp.fitBounds(encuadre(todas), { padding: margenes(), animate: false });
     mp.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-    mp.on('load', () => setListo(true));
+    mp.on('load', () => {
+      setListo(true);
+      // Calles visibles de entrada (es la base por defecto de esta pantalla).
+      agregarCalles(mp, true).then(setCalles);
+    });
     mapa.current = mp;
     return () => {
       mp.remove();
       mapa.current = null;
       setListo(false);
+      setCalles([]);
     };
   }, [todas]);
 
   useEffect(() => {
     const mp = mapa.current;
     if (!mp || !listo) return;
-    mp.setLayoutProperty('satelite', 'visibility', base === 'satelite' ? 'visible' : 'none');
-    mp.setLayoutProperty('calles', 'visibility', base === 'calles' ? 'visible' : 'none');
-  }, [base, listo]);
+    aplicarBase(mp, base, calles);
+  }, [base, listo, calles]);
 
   // Marcadores: un botón por localidad en su centro; se rehacen cuando llegan los estados.
   useEffect(() => {

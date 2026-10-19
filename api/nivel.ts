@@ -4,12 +4,7 @@
 import { getLocalidad } from '../shared/localidades/index.js';
 import type { LecturaNivel } from '../shared/fuentes/nivel.js';
 import { URL_ALTURAS_PREFECTURA, parsearAlturaPrefectura } from '../shared/fuentes/prefectura.js';
-
-const json = (body: unknown, status = 200, cache = 's-maxage=1800, stale-while-revalidate=3600') =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': cache },
-  });
+import { bajarTablaPrefectura, json } from './_prefectura.js';
 
 export async function GET(request: Request): Promise<Response> {
   const id = new URL(request.url).searchParams.get('localidad');
@@ -17,12 +12,7 @@ export async function GET(request: Request): Promise<Response> {
   if (!localidad) return json({ error: `Localidad desconocida: ${id}` }, 404, 'no-store');
 
   try {
-    const res = await fetch(URL_ALTURAS_PREFECTURA, {
-      headers: { 'user-agent': 'mapa-crecida-parana (proyecto informativo sin fines de lucro)' },
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!res.ok) throw new Error(`Prefectura respondió ${res.status}`);
-    const fila = parsearAlturaPrefectura(await res.text(), localidad.hidrometro.puertoPrefectura);
+    const fila = parsearAlturaPrefectura(await bajarTablaPrefectura(), localidad.hidrometro.puertoPrefectura);
     if (!fila) throw new Error(`No se encontró el puerto ${localidad.hidrometro.puertoPrefectura}`);
 
     const lectura: LecturaNivel = {
@@ -37,7 +27,7 @@ export async function GET(request: Request): Promise<Response> {
     };
     return json(lectura);
   } catch (e) {
-    // El frontend cae al JSON manual de /data/nivel/<id>.json.
+    // El frontend cae a Supabase y después al JSON manual de /data/nivel/<id>.json.
     return json({ error: (e as Error).message }, 502, 's-maxage=300');
   }
 }
