@@ -3,7 +3,7 @@ import type { Localidad } from '../../shared/localidades';
 import { lonLatAPixel } from '../lib/geo';
 import type { Modelo } from '../lib/modelo';
 import { cargarDatosEscena, type DatosEscena, type Edificio } from './datos';
-import { EscenaCrecida, type Calidad } from './escena';
+import { EXAG, EscenaCrecida, type Calidad } from './escena';
 import './escena3d.css';
 
 interface Props {
@@ -95,6 +95,31 @@ export default function Escena3D({ localidad, modelo, cotaSim, cotaActual, cotaC
     return { sim, hoy, total: datos.edificios.length };
   }, [datos, cotaSim, cotaActual]);
 
+  // Créditos según lo que realmente se muestra: el relieve del modelo y, sólo si se
+  // cargaron, la cobertura (WorldCover, también da los árboles) y los edificios (Overture).
+  const creditos = useMemo(() => {
+    const { fuenteDem, precalculado } = modelo.meta;
+    // Copernicus pide nombrar a DLR / Airbus; sin relieve procesado vale la atribución de la configuración.
+    const copernicus = /copernicus/i.test(fuenteDem);
+    const relieve = precalculado ? `Relieve: ${fuenteDem}${copernicus ? ' © DLR / Airbus' : ''}` : localidad.dem.attribution;
+    const relieveCorto = precalculado ? (copernicus ? '© Copernicus DEM' : fuenteDem) : localidad.dem.attribution;
+    const conCobertura = !!datos && (datos.cobertura.some((v) => v !== 0) || datos.arboles.x.length > 0);
+    const conEdificios = !!datos && datos.edificios.length > 0;
+    const largo = [relieve];
+    const corto = [relieveCorto];
+    if (conCobertura) {
+      largo.push('Cobertura © ESA WorldCover');
+      corto.push('ESA WorldCover');
+    }
+    if (conEdificios) {
+      largo.push('Edificios: Overture Maps (© OpenStreetMap, Microsoft, Google)');
+      corto.push('Overture Maps / OpenStreetMap');
+    }
+    largo.push(`Exageración vertical ×${EXAG}`);
+    corto.push(`Vertical ×${EXAG}`);
+    return { largo: largo.join(' · '), corto: corto.join(' · ') };
+  }, [modelo.meta, localidad.dem.attribution, datos]);
+
   const cambiarCalidad = () => {
     const nueva: Calidad = calidad === 'alta' ? 'baja' : 'alta';
     try {
@@ -154,10 +179,8 @@ export default function Escena3D({ localidad, modelo, cotaSim, cotaActual, cotaC
         Calidad {calidad === 'alta' ? 'alta' : 'baja'}
       </button>
       <div className="escena3d__creditos">
-        <span className="escena3d__creditos-largo">
-          Relieve © DLR / Airbus (Copernicus DEM) · Cobertura © ESA WorldCover · Edificios: Overture Maps (© OpenStreetMap, Microsoft, Google) · Exageración vertical ×3
-        </span>
-        <span className="escena3d__creditos-corto">© Copernicus DEM · ESA WorldCover · Overture Maps / OpenStreetMap · Vertical ×3</span>
+        <span className="escena3d__creditos-largo">{creditos.largo}</span>
+        <span className="escena3d__creditos-corto">{creditos.corto}</span>
       </div>
     </div>
   );

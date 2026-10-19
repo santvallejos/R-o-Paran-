@@ -19,12 +19,30 @@ export interface OpcionesEscena {
   onSeleccion: (e: { indice: number; edificio: Edificio } | null) => void;
 }
 
-const EXAG = 3; // exageración vertical común a terreno, agua y edificios
+export const EXAG = 3; // exageración vertical común a terreno, agua y edificios
 const EXAG_ARBOL = 1.6; // los árboles son ilustrativos
 const PALETA: Record<number, string> = {
   10: '#7a7f45', 20: '#a3a066', 30: '#cdbb88', 40: '#d9c48c', 50: '#c9b9a3', 60: '#e3d2a6', 80: '#8a9a78', 90: '#9aa47a', 95: '#6f7a45',
 };
 const COLOR_SUELO = '#cdbb88';
+
+/**
+ * Cámara, niebla, límites de zoom y sombras como fracción del lado mayor del modelo (m).
+ * Los factores salen de los valores ajustados a mano para Paso de la Patria
+ * (1283 × 787 px de 8,49 m → lado mayor ≈ 10 890 m), así otras localidades
+ * con un área más grande o más chica quedan encuadradas igual.
+ */
+const ESCALA = {
+  camara: [0.133, 0.12, -0.24], // posición inicial respecto del centro (≈ 1450, 1300, −2600)
+  objetivo: -0.014, // corrimiento en x del punto mirado (≈ −150)
+  nieblaDesde: 0.24, // ≈ 2600
+  nieblaHasta: 0.96, // ≈ 10 500
+  distanciaMax: 0.83, // ≈ 9000
+  lejos: 3.7, // plano lejano de la cámara (≈ 40 000)
+  sol: [-0.32, 0.29, -0.2], // ≈ (−3500, 3200, −2200)
+  sombra: 0.41, // medio lado del área con sombras (≈ 4500)
+  sombraLejos: 1.1, // ≈ 12 000
+} as const;
 
 export class EscenaCrecida {
   private renderer: THREE.WebGLRenderer;
@@ -62,26 +80,32 @@ export class EscenaCrecida {
     this.renderer.toneMappingExposure = 1.05;
     contenedor.appendChild(this.renderer.domElement);
 
+    // Lado mayor del área modelada en metros: escala de toda la puesta en escena.
+    const L = Math.max(m.ancho, m.alto) * m.celda_m;
+    const [cx, cy, cz] = ESCALA.camara.map((f) => f * L);
+
     const cielo = new THREE.Color('#cfdbe0');
     this.escena.background = cielo;
-    this.escena.fog = new THREE.Fog(cielo, 2600, 10500);
+    this.escena.fog = new THREE.Fog(cielo, ESCALA.nieblaDesde * L, ESCALA.nieblaHasta * L);
 
-    this.camara = new THREE.PerspectiveCamera(36, 1, 10, 40000);
-    this.camara.position.set(1450, 1300, -2600);
+    this.camara = new THREE.PerspectiveCamera(36, 1, 10, Math.max(40000, ESCALA.lejos * L));
+    this.camara.position.set(cx, cy, cz);
     this.controles = new MapControls(this.camara, this.renderer.domElement);
-    this.controles.target.set(-150, 0, 0);
+    this.controles.target.set(ESCALA.objetivo * L, 0, 0);
     Object.assign(this.controles, {
-      enableDamping: true, dampingFactor: 0.08, minDistance: 250, maxDistance: 9000, maxPolarAngle: 1.38, screenSpacePanning: false,
+      enableDamping: true, dampingFactor: 0.08, minDistance: 250, maxDistance: ESCALA.distanciaMax * L, maxPolarAngle: 1.38, screenSpacePanning: false,
     });
     this.controles.addEventListener('change', () => this.pedirCuadro());
 
     this.escena.add(new THREE.HemisphereLight('#f4efe4', '#8a7a5c', 1.15));
     const sol = new THREE.DirectionalLight('#fff3dd', 2.6);
-    sol.position.set(-3500, 3200, -2200);
+    // El sol se aleja con el área para que la cámara de sombras la cubra entera.
+    sol.position.set(...(ESCALA.sol.map((f) => f * L) as [number, number, number]));
     sol.castShadow = alta;
     if (alta) {
       sol.shadow.mapSize.set(4096, 4096);
-      Object.assign(sol.shadow.camera, { left: -4500, right: 4500, top: 4500, bottom: -4500, near: 100, far: 12000 });
+      const s = ESCALA.sombra * L;
+      Object.assign(sol.shadow.camera, { left: -s, right: s, top: s, bottom: -s, near: 100, far: ESCALA.sombraLejos * L });
       sol.shadow.bias = -0.0004;
       sol.shadow.normalBias = 3;
     }
