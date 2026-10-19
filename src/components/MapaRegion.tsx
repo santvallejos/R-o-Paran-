@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { localidades, type Localidad } from '../../shared/localidades';
 import { ESTILO_ESTADO, normalizar, obtenerEstadoRegion, type EstadoLocalidad } from '../lib/estadoRegion';
 import { alClicNavegar, urlDeLocalidad } from '../lib/navegacion';
+import { Aviso } from './Aviso';
 // Importar Mapa también deja configurado el worker de MapLibre (setWorkerUrl).
 import { agregarCalles, aplicarBase, CAPAS_BASE, FUENTES_BASE, type Base } from '../lib/mapaBase';
 // Mapa.tsx configura el worker de MapLibre al importarse; el mapa regional lo necesita igual.
@@ -125,9 +126,7 @@ export function MapaRegion({ onElegir, desconocida }: Props) {
 
   return (
     <div className="app">
-      <div className="aviso" role="note">
-        <strong>Estimación.</strong> No reemplaza las indicaciones oficiales de Prefectura, el municipio y Defensa Civil.
-      </div>
+      <Aviso />
       <div className="mapa">
         <div ref={contenedor} className="mapa__lienzo" />
         <div className="mapa__controles mapa__controles--region">

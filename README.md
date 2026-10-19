@@ -4,7 +4,11 @@ Web informativa que muestra, sobre un mapa 3D, **qué zonas se inundan a cada al
 Localidades: **Paso de la Patria** e **Itatí** (Corrientes), con un mapa regional del NEA para elegirlas. Se suman otras
 con un archivo de configuración (catálogo en [docs/localidades-nea.md](docs/localidades-nea.md)).
 
-> Estimación. No reemplaza las indicaciones oficiales de Prefectura, el municipio y Defensa Civil.
+> **Aviso.** Los datos y el mapa que muestra la web son **estimaciones**: la altura del río, las zonas inundables y la
+> vista 3D se calculan con relieve satelital y datos públicos, y pueden tener errores. **No reemplazan los datos ni las
+> indicaciones de las fuentes oficiales** (Prefectura Naval Argentina, INA, municipio y Defensa Civil). El proyecto
+> tiene un **fin educativo y práctico**: ayudar a entender cómo una crecida puede afectar a cada localidad. Ante una
+> emergencia, seguí siempre las indicaciones oficiales.
 
 **En línea:** https://rio-parana-topaz.vercel.app · Itatí en 3D: https://rio-parana-topaz.vercel.app/?localidad=itati&vista=3d
 

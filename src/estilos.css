@@ -38,6 +38,15 @@ button { font: inherit; cursor: pointer; }
   background: var(--aviso); color: var(--aviso-texto);
   font-size: 13px; line-height: 1.35; text-align: center;
 }
+/* Botón "Más info" del aviso: parece un enlace subrayado, con área táctil cómoda. */
+.aviso__mas {
+  border: 0; background: none; color: inherit; padding: 2px 4px;
+  font-size: 13px; font-weight: 700; text-decoration: underline;
+}
+.aviso__mas:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; border-radius: 4px; }
+/* Detalle desplegado: texto alineado a la izquierda y ancho de lectura acotado. */
+.aviso__detalle { max-width: 640px; margin: 6px auto 2px; text-align: left; }
+.aviso__detalle p { margin: 6px 0; }
 
 .mapa, .mapa__lienzo { position: absolute; inset: 0; }
 .selector-vista {

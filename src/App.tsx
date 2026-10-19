@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import type { SerieHistorica } from '../shared/fuentes/ina';
 import type { LecturaNivel } from '../shared/fuentes/nivel';
 import { localidades, type Localidad } from '../shared/localidades';
+import { Aviso } from './components/Aviso';
 import { Mapa } from './components/Mapa';
 import { MapaRegion } from './components/MapaRegion';
 import { Panel } from './components/Panel';
@@ -127,9 +128,7 @@ function VistaLocalidad({ base, onLocalidad }: PropsVista) {
 
   return (
     <div className="app">
-      <div className="aviso" role="note">
-        <strong>Estimación.</strong> No reemplaza las indicaciones oficiales de Prefectura, el municipio y Defensa Civil.
-      </div>
+      <Aviso />
       <div className="selector-vista" role="tablist" aria-label="Tipo de vista">
         <button type="button" role="tab" aria-selected={vista === 'mapa'} onClick={() => cambiarVista('mapa')}>
           Mapa
