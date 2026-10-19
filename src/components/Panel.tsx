@@ -4,6 +4,7 @@ import type { LecturaNivel } from '../../shared/fuentes/nivel';
 import type { Localidad, Umbral } from '../../shared/localidades';
 import { COLORES } from '../lib/capa';
 import type { MetaModelo } from '../lib/modelo.worker';
+import { Autor } from './Autor';
 import { SelectorLocalidad } from './SelectorLocalidad';
 
 interface Props {
@@ -366,6 +367,7 @@ export function Panel({ localidad, lectura, historico, alturaSim, onAlturaSim, c
             ))}
           </ul>
         </details>
+        <Autor />
       </div>
     </section>
   );

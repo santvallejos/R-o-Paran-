@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { localidades, type Localidad } from '../../shared/localidades';
 import { ESTILO_ESTADO, normalizar, obtenerEstadoRegion, type EstadoLocalidad } from '../lib/estadoRegion';
 import { alClicNavegar, urlDeLocalidad } from '../lib/navegacion';
+import { Autor } from './Autor';
 import { Aviso } from './Aviso';
 // Importar Mapa también deja configurado el worker de MapLibre (setWorkerUrl).
 import { agregarCalles, aplicarBase, CAPAS_BASE, FUENTES_BASE, type Base } from '../lib/mapaBase';
@@ -201,6 +202,7 @@ export function MapaRegion({ onElegir, desconocida }: Props) {
             El color compara la última altura registrada con los umbrales de alerta y evacuación de cada localidad. Tocá una para ver el mapa de
             crecida.
           </p>
+          <Autor />
         </div>
       </section>
     </div>

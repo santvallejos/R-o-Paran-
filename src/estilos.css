@@ -148,6 +148,8 @@ button { font: inherit; cursor: pointer; }
 .calibracion { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .calibracion input { width: 96px; font: inherit; padding: 4px 6px; border: 1px solid var(--borde); border-radius: 8px; background: transparent; color: inherit; }
 .aviso-chico { font-size: 12px; color: var(--tenue); }
+/* Crédito del autor al pie del panel: chico y tenue, sin competir con los datos. */
+.autor { margin: 4px 0 0; font-size: 12px; color: var(--tenue); text-align: center; }
 .fuentes { padding-left: 18px; }
 
 .vacio { color: #fff; padding: 24px; font-family: system-ui; }
