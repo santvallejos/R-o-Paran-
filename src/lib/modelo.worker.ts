@@ -3,6 +3,7 @@
 // procesado (procesamiento/procesar.py) usa ese; si no, lo calcula con los tiles públicos.
 import { getLocalidad } from '../../shared/localidades';
 import { calcularUmbrales } from './inundacion';
+import { urlRelieve } from './relieve';
 import { cargarGrilla, decodificarTerrarium, indicesDeSemillas, leerTile } from './terreno';
 
 export interface MetaModelo {
@@ -40,7 +41,8 @@ interface ModeloJson {
 const cauceHasta = (elev: Float32Array, cota: number) => Uint8Array.from(elev, (e) => (e <= cota ? 1 : 0));
 
 async function precalculado(id: string, origen: string): Promise<Extract<MensajeModelo, { ok: true }> | null> {
-  const base = `${origen}/data/relieve/${id}`;
+  // Bucket de Supabase Storage si VITE_RELIEVE_BASE está definida; si no, /data/relieve del sitio.
+  const base = urlRelieve(id, origen);
   const res = await fetch(`${base}/modelo.json`);
   if (!res.ok || !res.headers.get('content-type')?.includes('json')) return null;
   const m = (await res.json()) as ModeloJson;

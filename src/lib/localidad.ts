@@ -1,4 +1,5 @@
 import type { Localidad, Umbral } from '../../shared/localidades';
+import { resolverTiles, urlRelieve } from './relieve';
 import { consultar, supabaseConfigurado } from './supabase';
 
 interface FilaLocalidad {
@@ -42,11 +43,13 @@ export interface TerrenoProcesado {
 /** Tiles de relieve generados por procesamiento/procesar.py, si existen. */
 export async function terrenoProcesado(id: string): Promise<TerrenoProcesado | null> {
   try {
-    const res = await fetch(`/data/relieve/${id}/terreno.json`);
+    // Carpeta de la localidad: bucket de Supabase Storage o /data/relieve (ver lib/relieve.ts).
+    const base = urlRelieve(id);
+    const res = await fetch(`${base}/terreno.json`);
     if (!res.ok || !res.headers.get('content-type')?.includes('json')) return null;
     const t = (await res.json()) as TerrenoProcesado;
-    // MapLibre baja los tiles desde un worker: necesita la URL absoluta.
-    return { ...t, tiles: new URL(t.tiles, location.origin).href.replace(/%7B/g, '{').replace(/%7D/g, '}') };
+    // MapLibre baja los tiles desde un worker: necesita la URL absoluta, resuelta contra la misma base.
+    return { ...t, tiles: resolverTiles(t.tiles, id, base) };
   } catch {
     return null;
   }

@@ -25,6 +25,41 @@ de servicio (Edge Function y `procesar.py --subir`) o el panel de Supabase.
 - `cargar_version_relieve(p jsonb)` → carga una versión con sus zonas en una sola transacción y la deja activa.
   Sólo para `service_role`.
 
+## Storage: datos pesados del relieve
+
+Bucket público `relieve` (migración `20261020130000_storage_relieve.sql`): lectura anónima, escritura sólo con
+la clave de servicio, hasta 50 MB por archivo y sólo `image/png`, `application/json` y `application/octet-stream`.
+Guarda la salida de `procesar.py` con la misma estructura que `public/data/relieve/`:
+
+```
+relieve/<id>/modelo.json, terreno.json, elev.png, umbral.png, cauce.png
+relieve/<id>/terreno/{z}/{x}/{y}.png
+relieve/<id>/escena/cobertura.png, arboles.bin, edificios.json
+```
+
+La app lo usa si está definida la variable de build **`VITE_RELIEVE_BASE`** con la URL pública del bucket:
+
+```bash
+VITE_RELIEVE_BASE=https://<ref>.supabase.co/storage/v1/object/public/relieve
+```
+
+Sin la variable, la app lee de `/data/relieve/<id>/` del propio sitio (desarrollo local o deploy con los
+datos en el repo). Ver `src/lib/relieve.ts`. En Vercel se carga en *Settings → Environment Variables* y
+requiere un redeploy (Vite la incrusta en el build).
+
+Subida (desde `procesamiento/`, con `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en el entorno):
+
+```bash
+python procesar.py paso-de-la-patria --solo-subir-archivos   # sube lo ya generado
+python procesar.py itati --subir --subir-archivos            # procesa, carga zonas y sube archivos
+```
+
+Comprobar que un archivo quedó público y con el tipo correcto:
+
+```bash
+curl -sI https://<ref>.supabase.co/storage/v1/object/public/relieve/paso-de-la-patria/modelo.json | grep -i content-type
+```
+
 ## Registro automático de alturas
 
 - Edge Function `registrar-nivel` (`supabase/functions/registrar-nivel/`): lee la tabla de Prefectura y guarda
@@ -53,7 +88,7 @@ values ('paso-de-la-patria', 7.40, '2026-10-19 08:00-03', 'Parte municipal', 'ma
 
 ```bash
 supabase link --project-ref <ref>
-supabase db push                      # migraciones
+supabase db push                      # migraciones (incluye el bucket `relieve`)
 psql "$DB_URL" -f supabase/seed.sql   # localidad inicial
 supabase functions deploy registrar-nivel
 # y en el SQL Editor crear los secretos de Vault que pide la migración del cron

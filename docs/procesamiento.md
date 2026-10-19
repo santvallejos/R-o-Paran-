@@ -32,6 +32,23 @@ Todo se reproyecta a una grilla Web Mercator alineada con los píxeles de tiles 
 
 Las descargas quedan en `procesamiento/cache/<id>/`. Para volver a bajar, se borra esa carpeta.
 
+`terreno.json` guarda `tiles` relativo a la carpeta de la localidad (`terreno/{z}/{x}/{y}.png`); la app lo
+resuelve contra donde estén los archivos. Los `terreno.json` viejos, con `/data/relieve/<id>/…`, siguen andando.
+
+### Subir los archivos a Supabase Storage
+
+La carpeta `public/data/relieve/<id>/` pesa de ~10 MB (pueblos) a 50–150 MB (ciudades). Para no versionarla
+ni mandarla en cada deploy, se sube al bucket público `relieve` (ver [supabase.md](supabase.md#storage-datos-pesados-del-relieve)):
+
+```bash
+python procesar.py paso-de-la-patria --subir-archivos        # procesa y al final sube la carpeta
+python procesar.py paso-de-la-patria --solo-subir-archivos   # sólo sube lo ya generado, sin reprocesar
+```
+
+Sube cada `.png`, `.json` y `.bin` a `relieve/<id>/<ruta>` con upsert, `Content-Type` por extensión y
+`Cache-Control: max-age=86400`, con 8 subidas en paralelo y reintentos ante errores de red, 429 o 5xx.
+Necesita `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en el entorno, como `--subir`.
+
 ## Usar un DEM mejor
 
 ```bash

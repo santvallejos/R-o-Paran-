@@ -43,10 +43,14 @@ cd procesamiento
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 python procesar.py paso-de-la-patria             # Copernicus + correcciones → public/data/relieve/
 python procesar.py paso-de-la-patria --subir     # además carga las zonas en Supabase (*)
+python procesar.py paso-de-la-patria --solo-subir-archivos  # sube public/data/relieve/<id> a Storage (*)
 python -m pytest
 ```
 
-(*) `--subir` necesita `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en el entorno. La clave de servicio
+Con `VITE_RELIEVE_BASE` (URL pública del bucket `relieve`) la app lee los datos del relieve de Supabase Storage
+en vez de `public/data/relieve/`. Ver [docs/supabase.md](docs/supabase.md#storage-datos-pesados-del-relieve).
+
+(*) `--subir` y `--solo-subir-archivos` necesitan `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en el entorno. La clave de servicio
 **nunca** va al repo ni al frontend.
 
 Detalles en [docs/procesamiento.md](docs/procesamiento.md) y [docs/supabase.md](docs/supabase.md).
