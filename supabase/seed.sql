@@ -3,18 +3,18 @@
 insert into public.localidades (id, nombre, provincia, rio, puerto_prefectura, cota_cero_m, cota_cero_provisoria, umbrales, pronostico)
 values (
   'paso-de-la-patria', 'Paso de la Patria', 'Corrientes', 'Paraná', 'PASO DE LA PATRIA', 44.0, true,
-  '[{"nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b"}, {"nombre": "Evacuación", "altura_m": 7.0, "color": "#dc2626"}]',
+  '[{"nombre": "Alerta", "altura_m": 6.8, "color": "#f59e0b"}, {"nombre": "Evacuación", "altura_m": 7.5, "color": "#dc2626"}]',
   '{"desde_m": 7.1, "hasta_m": 7.5, "fuente": "Municipalidad de Paso de la Patria"}'
 )
 on conflict (id) do nothing;
 
 -- Itatí, piloto de la ampliación al NEA (mismos datos que shared/localidades/itati.json y
--- la migración 20261020120000_itati.sql). Cero IGN del INA; umbrales provisorios hasta
--- que la Edge Function traiga los oficiales de Prefectura.
+-- la migración 20261020120000_itati.sql). Cero IGN del INA; umbrales de Prefectura e INA, que
+-- la Edge Function mantiene al día.
 insert into public.localidades (id, nombre, provincia, rio, puerto_prefectura, cota_cero_m, cota_cero_provisoria, umbrales, pronostico)
 values (
   'itati', 'Itatí', 'Corrientes', 'Paraná', 'ITATI', 45.66, false,
-  '[{"nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b"}, {"nombre": "Evacuación", "altura_m": 7.0, "color": "#dc2626"}]',
+  '[{"nombre": "Alerta", "altura_m": 6.8, "color": "#f59e0b"}, {"nombre": "Evacuación", "altura_m": 7.5, "color": "#dc2626"}]',
   null
 )
 on conflict (id) do nothing;

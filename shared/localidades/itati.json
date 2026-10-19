@@ -3,26 +3,32 @@
   "nombre": "Itatí",
   "provincia": "Corrientes",
   "rio": "Paraná",
-  "centro": [-58.244, -27.267],
-  "zoom": 13.6,
-  "bbox": [-58.29, -27.3, -58.2, -27.245],
+  "centro": [-58.245, -27.275],
+  "zoom": 13.4,
+  "bbox": [-58.30, -27.305, -58.19, -27.245],
   "semillasRio": [
-    [-58.25, -27.255],
-    [-58.22, -27.258]
+    [-58.245, -27.256],
+    [-58.275, -27.256]
   ],
   "hidrometro": {
     "nombre": "Hidrómetro del puerto de Itatí",
     "cotaCero_m": 45.66,
     "cotaCeroProvisoria": false,
     "puertoPrefectura": "ITATI",
-    "notaCalibracion": "Cero IGN publicado por el INA (estación Itatí)."
+    "notaCalibracion": "Cero IGN 45,66 m publicado por el INA (estación 17). El INA no declara el sistema de alturas: contra el relieve, el agua del río queda unos 0,8 m por encima del DEM."
   },
   "umbrales": [
-    { "nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b" },
-    { "nombre": "Evacuación", "altura_m": 7.0, "color": "#dc2626" }
+    { "nombre": "Alerta", "altura_m": 6.8, "color": "#f59e0b" },
+    { "nombre": "Evacuación", "altura_m": 7.5, "color": "#dc2626" }
   ],
-  "simulador": { "min_m": 5.0, "max_m": 10.0, "paso_m": 0.05 },
+  "simulador": { "min_m": 5.0, "max_m": 10.2, "paso_m": 0.05 },
   "ina": { "serieAltura": 17 },
+  "crecidasHistoricas": [
+    { "nombre": "1983", "altura_m": 10.13, "fecha": "1983-07-17" },
+    { "nombre": "1998", "altura_m": 8.95, "fecha": "1998-05-03" },
+    { "nombre": "2015-16", "altura_m": 7.92, "fecha": "2015-12-20" },
+    { "nombre": "2023", "altura_m": 8.07, "fecha": "2023-11-09" }
+  ],
   "dem": {
     "nombre": "Terrarium (SRTM/Copernicus, ~30 m)",
     "tiles": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
@@ -37,7 +43,7 @@
     "zoomTiles": [10, 14],
     "correccionCobertura_m": { "arboles": 3.0, "arbustos": 1.0, "edificado": 2.0 },
     "filtroMediana_px": 5,
-    "nivelesZonas_m": { "desde": 5.0, "hasta": 10.0, "paso": 0.1 },
+    "nivelesZonas_m": { "desde": 5.0, "hasta": 10.2, "paso": 0.1 },
     "simplificarZonas_m": 12,
     "escena3d": { "densidadArboles": 0.55, "maxArboles": 120000 }
   },

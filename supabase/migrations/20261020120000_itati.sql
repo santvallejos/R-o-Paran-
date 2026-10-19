@@ -5,7 +5,7 @@
 insert into public.localidades (id, nombre, provincia, rio, puerto_prefectura, cota_cero_m, cota_cero_provisoria, umbrales, pronostico)
 values (
   'itati', 'Itatí', 'Corrientes', 'Paraná', 'ITATI', 45.66, false,
-  '[{"nombre":"Alerta","altura_m":6.5,"color":"#f59e0b"},{"nombre":"Evacuación","altura_m":7,"color":"#dc2626"}]',
+  '[{"nombre":"Alerta","altura_m":6.8,"color":"#f59e0b"},{"nombre":"Evacuación","altura_m":7.5,"color":"#dc2626"}]',
   null
 )
 on conflict (id) do update set
