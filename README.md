@@ -94,13 +94,24 @@ docs/                   contexto del proyecto y calibración
 
 ## Sumar otra localidad
 
+Ejemplo completo: Itatí (`shared/localidades/itati.json`), piloto de la ampliación al NEA.
+
 1. Copiar `shared/localidades/paso-de-la-patria.json` (y su `.ts`) y completar: `bbox`, `semillasRio`,
-   `hidrometro` (cota del cero y nombre del puerto como figura en Prefectura), `umbrales`, `pronostico`.
-2. Registrarla en `shared/localidades/index.ts`.
-3. Insertar la fila en `public.localidades` de Supabase (ver `supabase/seed.sql`). Desde ese momento la Edge
-   Function registra sus alturas.
-4. `python procesamiento/procesar.py <id> --subir`.
-5. Crear `public/data/nivel/<id>.json` como respaldo y abrir `?localidad=<id>`.
+   `hidrometro` (cota del cero, `notaCalibracion` y nombre del puerto como figura en Prefectura), `umbrales`,
+   `simulador`, `ina.serieAltura`, `procesamiento.nivelesZonas_m` y, si hay, `pronostico` y `crecidasHistoricas`.
+2. Registrarla en `shared/localidades/index.ts` (registro estático, import con extensión `.js`).
+3. `npm test`: `shared/localidades/validar.test.ts` corre `validarLocalidad()` sobre todas las localidades
+   registradas (bbox, centro y semillas dentro del área, rango del simulador, umbrales, serie del INA, cota del
+   cero y que las zonas precalculadas cubran el simulador).
+4. Generar la migración desde el JSON (que es la fuente de verdad) y aplicarla en Supabase. Desde ese momento la
+   Edge Function registra sus alturas y pisa los umbrales con los oficiales de Prefectura:
+   ```
+   node scripts/sql-localidad.ts <id> > supabase/migrations/<AAAAMMDDhhmmss>_<id>.sql
+   ```
+   (Node 23.6+; con Node 22 agregar `--experimental-strip-types`. En Windows correrlo desde Git Bash: el `>` de
+   PowerShell 5 escribe UTF-16.) Sumar la misma fila a `supabase/seed.sql`.
+5. `python procesamiento/procesar.py <id> --subir`.
+6. Crear `public/data/nivel/<id>.json` como respaldo y abrir `?localidad=<id>`.
 
 ## Limitaciones conocidas (leer antes de difundir)
 

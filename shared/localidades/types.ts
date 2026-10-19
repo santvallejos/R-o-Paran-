@@ -44,6 +44,8 @@ export interface Localidad {
     cotaCeroProvisoria: boolean;
     /** Nombre del puerto tal como aparece en la tabla de alturas de Prefectura. */
     puertoPrefectura: string;
+    /** Texto que explica cómo se obtuvo la cota del cero (se muestra en el panel). */
+    notaCalibracion?: string;
   };
 
   umbrales: Umbral[];
@@ -70,6 +72,29 @@ export interface Localidad {
     zoomModelo: number;
     maxzoom: number;
     attribution: string;
+  };
+
+  /**
+   * Parámetros del pipeline de relieve (procesamiento/procesar.py). La app no los usa
+   * para calcular; están tipados para validarlos junto con el resto de la configuración.
+   */
+  procesamiento?: {
+    /** Fuente del DEM base (p. ej. `copernicus-glo30`). */
+    fuente: string;
+    /** Margen alrededor del bbox, en grados, para los tiles de relieve 3D. */
+    margenTiles_grados: number;
+    /** Rango de zoom [mínimo, máximo] de los tiles de relieve generados. */
+    zoomTiles: [min: number, max: number];
+    /** Metros que se restan al DEM según la cobertura (ESA WorldCover). */
+    correccionCobertura_m: { arboles: number; arbustos: number; edificado: number };
+    /** Tamaño de la ventana del filtro de mediana contra el ruido del DEM. */
+    filtroMediana_px: number;
+    /** Alturas del hidrómetro para las que se precalculan zonas inundables. */
+    nivelesZonas_m: { desde: number; hasta: number; paso: number };
+    /** Tolerancia de simplificación de los polígonos de zonas, en metros. */
+    simplificarZonas_m: number;
+    /** Densidad y tope de árboles de la vista 3D. */
+    escena3d: { densidadArboles: number; maxArboles: number };
   };
 
   fuentes: FuenteOficial[];

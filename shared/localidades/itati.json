@@ -1,0 +1,49 @@
+{
+  "id": "itati",
+  "nombre": "Itatí",
+  "provincia": "Corrientes",
+  "rio": "Paraná",
+  "centro": [-58.244, -27.267],
+  "zoom": 13.6,
+  "bbox": [-58.29, -27.3, -58.2, -27.245],
+  "semillasRio": [
+    [-58.25, -27.255],
+    [-58.22, -27.258]
+  ],
+  "hidrometro": {
+    "nombre": "Hidrómetro del puerto de Itatí",
+    "cotaCero_m": 45.66,
+    "cotaCeroProvisoria": false,
+    "puertoPrefectura": "ITATI",
+    "notaCalibracion": "Cero IGN publicado por el INA (estación Itatí)."
+  },
+  "umbrales": [
+    { "nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b" },
+    { "nombre": "Evacuación", "altura_m": 7.0, "color": "#dc2626" }
+  ],
+  "simulador": { "min_m": 5.0, "max_m": 10.0, "paso_m": 0.05 },
+  "ina": { "serieAltura": 17 },
+  "dem": {
+    "nombre": "Terrarium (SRTM/Copernicus, ~30 m)",
+    "tiles": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+    "encoding": "terrarium",
+    "zoomModelo": 14,
+    "maxzoom": 15,
+    "attribution": "Relieve: Mapzen Terrain Tiles (SRTM, NASA)"
+  },
+  "procesamiento": {
+    "fuente": "copernicus-glo30",
+    "margenTiles_grados": 0.08,
+    "zoomTiles": [10, 14],
+    "correccionCobertura_m": { "arboles": 3.0, "arbustos": 1.0, "edificado": 2.0 },
+    "filtroMediana_px": 5,
+    "nivelesZonas_m": { "desde": 5.0, "hasta": 10.0, "paso": 0.1 },
+    "simplificarZonas_m": 12,
+    "escena3d": { "densidadArboles": 0.55, "maxArboles": 120000 }
+  },
+  "fuentes": [
+    { "nombre": "Prefectura Naval — Alturas de los ríos", "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/" },
+    { "nombre": "INA — Sistema de Alerta Hidrológico", "url": "https://www.ina.gob.ar/alerta/" },
+    { "nombre": "INA — Datos hidrológicos (API a5)", "url": "https://alerta.ina.gob.ar/pub/mapa" }
+  ]
+}
