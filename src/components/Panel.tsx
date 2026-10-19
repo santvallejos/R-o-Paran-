@@ -4,6 +4,7 @@ import type { LecturaNivel } from '../../shared/fuentes/nivel';
 import type { Localidad, Umbral } from '../../shared/localidades';
 import { COLORES } from '../lib/capa';
 import type { MetaModelo } from '../lib/modelo.worker';
+import { SelectorLocalidad } from './SelectorLocalidad';
 
 interface Props {
   localidad: Localidad;
@@ -21,6 +22,8 @@ interface Props {
   onReproducir: () => void;
   /** En la vista 3D la leyenda va sobre la escena. */
   conLeyenda: boolean;
+  /** Navega a otra localidad; `null` vuelve al mapa regional. */
+  onLocalidad: (id: string | null) => void;
 }
 
 const m = (h: number) => `${h.toFixed(2).replace('.', ',')} m`;
@@ -123,7 +126,7 @@ function GraficoHistorico({ serie, umbrales }: { serie: SerieHistorica['serie'];
   );
 }
 
-export function Panel({ localidad, lectura, historico, alturaSim, onAlturaSim, cotaCero, onCotaCero, hectareas, estadoModelo, metaModelo, reproduciendo, onReproducir, conLeyenda }: Props) {
+export function Panel({ localidad, lectura, historico, alturaSim, onAlturaSim, cotaCero, onCotaCero, hectareas, estadoModelo, metaModelo, reproduciendo, onReproducir, conLeyenda, onLocalidad }: Props) {
   const [abierto, setAbierto] = useState(true);
   const { simulador: s } = localidad;
   const actual = lectura?.altura_m ?? null;
@@ -141,6 +144,9 @@ export function Panel({ localidad, lectura, historico, alturaSim, onAlturaSim, c
           Simulando <strong>{m(alturaSim)}</strong> {abierto ? '▾' : '▴'}
         </span>
       </button>
+
+      {/* Fuera del cuerpo plegable: aun con la hoja cerrada se puede cambiar de localidad. */}
+      <SelectorLocalidad actual={localidad.id} onElegir={onLocalidad} />
 
       <div className="panel__cuerpo">
         <div className="tarjeta tarjeta--nivel">
@@ -338,10 +344,13 @@ export function Panel({ localidad, lectura, historico, alturaSim, onAlturaSim, c
             Cota del cero del hidrómetro (m)
             <input type="number" step={0.05} value={cotaCero} onChange={(e) => Number.isFinite(e.target.valueAsNumber) && onCotaCero(e.target.valueAsNumber)} />
           </label>
-          {localidad.hidrometro.cotaCeroProvisoria && (
+          {/* La nota de calibración es propia de cada localidad (cómo se estimó su cero); si la cota
+              es provisoria se invita a probar otro valor. Sin nota ni cota provisoria no se muestra nada. */}
+          {(localidad.hidrometro.notaCalibracion || localidad.hidrometro.cotaCeroProvisoria) && (
             <p className="aviso-chico">
-              Estimado con los hidrómetros del INA de Itatí y Corrientes (cero IGN), interpolando la pendiente del río. A confirmar con el dato oficial.
-              Si lo conocés, cambialo acá para ver el efecto.
+              {localidad.hidrometro.notaCalibracion}
+              {localidad.hidrometro.notaCalibracion && localidad.hidrometro.cotaCeroProvisoria && ' '}
+              {localidad.hidrometro.cotaCeroProvisoria && 'Si lo conocés, cambialo acá para ver el efecto.'}
             </p>
           )}
           <p>

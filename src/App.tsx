@@ -1,26 +1,64 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { SerieHistorica } from '../shared/fuentes/ina';
 import type { LecturaNivel } from '../shared/fuentes/nivel';
-import { getLocalidad, localidades, type Localidad } from '../shared/localidades';
+import { localidades, type Localidad } from '../shared/localidades';
 import { Mapa } from './components/Mapa';
+import { MapaRegion } from './components/MapaRegion';
 import { Panel } from './components/Panel';
 import { superficieInundada } from './lib/inundacion';
 import { conDatosOperativos, terrenoProcesado, type TerrenoProcesado } from './lib/localidad';
 import { cargarModelo, type Modelo } from './lib/modelo';
 import { obtenerHistorico } from './lib/historico';
+import { empujarLocalidad, localidadDeUrl } from './lib/navegacion';
 import { obtenerNivel } from './lib/nivel';
 
-const params = new URLSearchParams(location.search);
 // three.js sólo se descarga si se abre la vista 3D.
 const Escena3D = lazy(() => import('./vista3d/Escena3D'));
 type Vista = 'mapa' | '3d';
 
-const ceroUrl = Number(params.get('cero'));
-const ceroForzado = params.has('cero') && Number.isFinite(ceroUrl) && ceroUrl > 0 ? ceroUrl : null;
+/** `?cero=` fuerza la cota del cero (para probar calibraciones). Se lee al montar cada localidad. */
+function ceroDeUrl(): number | null {
+  const params = new URLSearchParams(location.search);
+  const cero = Number(params.get('cero'));
+  return params.has('cero') && Number.isFinite(cero) && cero > 0 ? cero : null;
+}
 
+/**
+ * Raíz: decide entre la pantalla regional (sin `?localidad=` o con un id desconocido) y la
+ * vista de una localidad. La navegación usa el historial del navegador sin recargar.
+ */
 export function App() {
-  const base = getLocalidad(params.get('localidad'));
-  const [localidad, setLocalidad] = useState<Localidad | undefined>(base);
+  const [localidadId, setLocalidadId] = useState<string | null>(localidadDeUrl);
+
+  // Atrás/adelante del navegador: la URL ya cambió, sólo hay que leerla.
+  useEffect(() => {
+    const alVolver = () => setLocalidadId(localidadDeUrl());
+    addEventListener('popstate', alVolver);
+    return () => removeEventListener('popstate', alVolver);
+  }, []);
+
+  // Estable para que el mapa regional no rehaga los marcadores en cada render.
+  const navegar = useCallback((id: string | null) => {
+    empujarLocalidad(id);
+    setLocalidadId(id);
+  }, []);
+
+  const base = localidadId ? localidades[localidadId] : undefined;
+  if (!base) return <MapaRegion onElegir={navegar} desconocida={localidadId} />;
+  // `key`: al cambiar de localidad se desmonta todo (worker del modelo, mapa, escena 3D) y arranca limpio.
+  return <VistaLocalidad key={base.id} base={base} onLocalidad={navegar} />;
+}
+
+interface PropsVista {
+  base: Localidad;
+  onLocalidad: (id: string | null) => void;
+}
+
+/** Mapa o vista 3D de una localidad con su panel. */
+function VistaLocalidad({ base, onLocalidad }: PropsVista) {
+  // Se leen una vez al montar: al cambiar de localidad `?cero=` ya se descartó de la URL.
+  const [ceroForzado] = useState(ceroDeUrl);
+  const [localidad, setLocalidad] = useState<Localidad>(base);
   const [terreno, setTerreno] = useState<TerrenoProcesado | null | undefined>(undefined);
   const [lectura, setLectura] = useState<LecturaNivel | null | undefined>(undefined);
   // undefined: consultando; null: sin datos del INA (el panel oculta el gráfico).
@@ -28,12 +66,11 @@ export function App() {
   const [modelo, setModelo] = useState<Modelo | null>(null);
   const [estadoModelo, setEstadoModelo] = useState('cargando');
   const [alturaSim, setAlturaSim] = useState<number | null>(null);
-  const [cotaCero, setCotaCero] = useState(ceroForzado ?? base?.hidrometro.cotaCero_m ?? 0);
-  const [vista, setVista] = useState<Vista>(params.get('vista') === '3d' ? '3d' : 'mapa');
+  const [cotaCero, setCotaCero] = useState(ceroForzado ?? base.hidrometro.cotaCero_m);
+  const [vista, setVista] = useState<Vista>(() => (new URLSearchParams(location.search).get('vista') === '3d' ? '3d' : 'mapa'));
   const [reproduciendo, setReproduciendo] = useState(false);
 
   useEffect(() => {
-    if (!base) return;
     document.title = `Crecida del río ${base.rio} · ${base.nombre}`;
     conDatosOperativos(base).then((l) => {
       setLocalidad(l);
@@ -48,14 +85,15 @@ export function App() {
         setEstadoModelo('listo');
       })
       .catch((e: Error) => setEstadoModelo(e.message));
-  }, [base]);
+    // La vista se monta de nuevo (key) por cada localidad: alcanza con correr esto al montar.
+  }, [base, ceroForzado]);
 
   const actual = lectura?.altura_m ?? null;
-  const altura = alturaSim ?? actual ?? localidad?.umbrales[0]?.altura_m ?? 0;
+  const altura = alturaSim ?? actual ?? localidad.umbrales[0]?.altura_m ?? 0;
 
   // Simulación de la subida: avanza la altura desde la actual hasta el máximo del simulador.
   useEffect(() => {
-    if (!reproduciendo || !localidad) return;
+    if (!reproduciendo) return;
     const { max_m } = localidad.simulador;
     let previo = performance.now();
     let h = altura >= max_m - 0.01 ? (actual ?? localidad.simulador.min_m) : altura;
@@ -86,21 +124,6 @@ export function App() {
     const f = (c: number) => superficieInundada(modelo.umbral, modelo.cauce, c, modelo.celda_m);
     return { sim: f(cotaSim), actual: cotaActual === null ? null : f(cotaActual) };
   }, [modelo, cotaSim, cotaActual]);
-
-  if (!localidad) {
-    return (
-      <main className="vacio">
-        <p>Localidad no encontrada. Disponibles:</p>
-        <ul>
-          {Object.values(localidades).map((l) => (
-            <li key={l.id}>
-              <a href={`?localidad=${l.id}`}>{l.nombre}</a>
-            </li>
-          ))}
-        </ul>
-      </main>
-    );
-  }
 
   return (
     <div className="app">
@@ -143,6 +166,7 @@ export function App() {
         hectareas={hectareas}
         estadoModelo={estadoModelo}
         metaModelo={modelo?.meta ?? null}
+        onLocalidad={onLocalidad}
       />
     </div>
   );

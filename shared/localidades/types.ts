@@ -44,6 +44,8 @@ export interface Localidad {
     cotaCeroProvisoria: boolean;
     /** Nombre del puerto tal como aparece en la tabla de alturas de Prefectura. */
     puertoPrefectura: string;
+    /** Texto que explica cómo se obtuvo la cota del cero (se muestra en el panel). */
+    notaCalibracion?: string;
   };
 
   umbrales: Umbral[];

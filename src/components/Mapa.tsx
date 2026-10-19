@@ -11,7 +11,31 @@ import type { Modelo } from '../lib/modelo';
 // El bundler no sigue el worker interno de MapLibre: se le indica la URL explícita.
 maplibregl.setWorkerUrl(urlWorkerMapa);
 
-type Base = 'satelite' | 'calles';
+export type Base = 'satelite' | 'calles';
+
+/** Fuentes raster de las dos bases (satélite y calles); las comparte el mapa regional. */
+export const FUENTES_BASE = {
+  satelite: {
+    type: 'raster',
+    tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+    tileSize: 256,
+    maxzoom: 19,
+    attribution: 'Imágenes © Esri, Maxar, Earthstar Geographics',
+  },
+  calles: {
+    type: 'raster',
+    tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+    tileSize: 256,
+    maxzoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  },
+} satisfies StyleSpecification['sources'];
+
+/** Capas de las bases: satélite visible y calles oculta hasta que se alterne. */
+export const CAPAS_BASE = [
+  { id: 'satelite', type: 'raster', source: 'satelite' },
+  { id: 'calles', type: 'raster', source: 'calles', layout: { visibility: 'none' } },
+] satisfies StyleSpecification['layers'];
 
 interface Props {
   localidad: Localidad;
@@ -30,27 +54,13 @@ function estilo(loc: Localidad, t: TerrenoProcesado | null): StyleSpecification 
   return {
     version: 8,
     sources: {
-      satelite: {
-        type: 'raster',
-        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-        tileSize: 256,
-        maxzoom: 19,
-        attribution: 'Imágenes © Esri, Maxar, Earthstar Geographics',
-      },
-      calles: {
-        type: 'raster',
-        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-        tileSize: 256,
-        maxzoom: 19,
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      },
+      ...FUENTES_BASE,
       terreno: { type: 'raster-dem', tileSize: 256, ...dem, attribution: atribucion },
       // MapLibre recomienda una fuente aparte para el sombreado.
       sombreado: { type: 'raster-dem', tileSize: 256, ...dem },
     },
     layers: [
-      { id: 'satelite', type: 'raster', source: 'satelite' },
-      { id: 'calles', type: 'raster', source: 'calles', layout: { visibility: 'none' } },
+      ...CAPAS_BASE,
       {
         id: 'sombreado',
         type: 'hillshade',
