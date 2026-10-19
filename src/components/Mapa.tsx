@@ -62,6 +62,21 @@ function estilo(loc: Localidad, t: TerrenoProcesado | null): StyleSpecification 
   };
 }
 
+/**
+ * Polígono que cubre todo el mundo visible con un agujero en el rectángulo modelado
+ * (`esquinas` = NO, NE, SE, SO). Se usa para oscurecer lo que queda fuera del modelo.
+ */
+function areaModelo(esquinas: [number, number][]) {
+  // Anillo exterior antihorario y agujero horario, como pide GeoJSON (RFC 7946).
+  const mundo: [number, number][] = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+  const agujero: [number, number][] = [...esquinas, esquinas[0]];
+  return {
+    type: 'Feature' as const,
+    properties: {},
+    geometry: { type: 'Polygon' as const, coordinates: [mundo, agujero] },
+  };
+}
+
 export function Mapa({ localidad, terreno, modelo, cotaSim, cotaActual }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<maplibregl.Map | null>(null);
@@ -108,12 +123,36 @@ export function Mapa({ localidad, terreno, modelo, cotaSim, cotaActual }: Props)
       if (fuente) {
         fuente.updateImage({ image: buffer.current });
       } else {
+        // Fuera del área modelada no hay datos: se oscurece y se marca el borde para que
+        // el corte recto del agua no se lea como "acá no se inunda". El sombreado exterior
+        // va antes de la capa de agua para quedar debajo.
+        const nuevaArea = !m.getSource('area-modelo');
+        if (nuevaArea) {
+          m.addSource('area-modelo', { type: 'geojson', data: areaModelo(modelo.esquinas) });
+          m.addLayer({
+            id: 'area-modelo-exterior',
+            type: 'fill',
+            source: 'area-modelo',
+            paint: { 'fill-color': '#0f172a', 'fill-opacity': 0.35 },
+          });
+        }
         m.addSource('agua', {
           type: 'image',
           coordinates: modelo.esquinas as [[number, number], [number, number], [number, number], [number, number]],
         });
         m.getSource<ImageSource>('agua')!.updateImage({ image: buffer.current });
-        m.addLayer({ id: 'agua', type: 'raster', source: 'agua', paint: { 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } });
+        // Remuestreo lineal: suaviza los bordes escalonados de las celdas sobre el DEM de 30 m.
+        m.addLayer({ id: 'agua', type: 'raster', source: 'agua', paint: { 'raster-resampling': 'linear', 'raster-fade-duration': 0 } });
+        if (nuevaArea) {
+          // El borde punteado va sobre el agua: si no, el azul de la crecida lo tapa justo en el límite.
+          // Sólo importa el anillo interior (el agujero); el exterior queda fuera de la navegación.
+          m.addLayer({
+            id: 'area-modelo-borde',
+            type: 'line',
+            source: 'area-modelo',
+            paint: { 'line-color': '#e0f2fe', 'line-opacity': 0.6, 'line-width': 1.5, 'line-dasharray': [3, 2] },
+          });
+        }
       }
     });
     return () => cancelAnimationFrame(frame);

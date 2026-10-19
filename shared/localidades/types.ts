@@ -52,6 +52,15 @@ export interface Localidad {
 
   simulador: { min_m: number; max_m: number; paso_m: number };
 
+  /** Series del INA (API a5) para el gráfico de los últimos días. */
+  ina?: {
+    /** Id de la serie de altura hidrométrica de la localidad. */
+    serieAltura: number;
+  };
+
+  /** Máximos históricos de referencia, para probarlos en el simulador. */
+  crecidasHistoricas?: { nombre: string; altura_m: number; fecha: string }[];
+
   /** Terreno usado por el modelo y por el relieve 3D. */
   dem: {
     nombre: string;

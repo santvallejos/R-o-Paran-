@@ -12,7 +12,7 @@
   ],
   "hidrometro": {
     "nombre": "Hidrómetro del puerto de Paso de la Patria",
-    "cotaCero_m": 40.5,
+    "cotaCero_m": 44.0,
     "cotaCeroProvisoria": true,
     "puertoPrefectura": "PASO DE LA PATRIA"
   },
@@ -21,7 +21,14 @@
     { "nombre": "Evacuación", "altura_m": 7.0, "color": "#dc2626" }
   ],
   "pronostico": { "desde_m": 7.1, "hasta_m": 7.5, "fuente": "Municipalidad de Paso de la Patria" },
-  "simulador": { "min_m": 5.0, "max_m": 8.5, "paso_m": 0.05 },
+  "simulador": { "min_m": 5.0, "max_m": 9.6, "paso_m": 0.05 },
+  "ina": { "serieAltura": 18 },
+  "crecidasHistoricas": [
+    { "nombre": "1983", "altura_m": 9.54, "fecha": "1983-06-21" },
+    { "nombre": "1998", "altura_m": 8.69, "fecha": "1998-05-04" },
+    { "nombre": "2016", "altura_m": 7.78, "fecha": "2016-01-11" },
+    { "nombre": "2023", "altura_m": 7.44, "fecha": "2023-11-10" }
+  ],
   "dem": {
     "nombre": "Terrarium (SRTM/Copernicus, ~30 m)",
     "tiles": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
@@ -36,12 +43,13 @@
     "zoomTiles": [10, 14],
     "correccionCobertura_m": { "arboles": 3.0, "arbustos": 1.0, "edificado": 2.0 },
     "filtroMediana_px": 5,
-    "nivelesZonas_m": { "desde": 5.0, "hasta": 8.5, "paso": 0.1 },
+    "nivelesZonas_m": { "desde": 5.0, "hasta": 9.6, "paso": 0.1 },
     "simplificarZonas_m": 12,
     "escena3d": { "densidadArboles": 0.55, "maxArboles": 120000 }
   },
   "fuentes": [
     { "nombre": "Prefectura Naval — Alturas de los ríos", "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/" },
-    { "nombre": "INA — Sistema de Alerta Hidrológico", "url": "https://www.ina.gob.ar/alerta/" }
+    { "nombre": "INA — Sistema de Alerta Hidrológico", "url": "https://www.ina.gob.ar/alerta/" },
+    { "nombre": "INA — Datos hidrológicos (API a5)", "url": "https://alerta.ina.gob.ar/pub/mapa" }
   ]
 }

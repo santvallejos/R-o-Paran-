@@ -49,8 +49,10 @@ bloques que caen en el área. Tarda ~1 minuto y queda en caché. `--sin-escena3d
 
 ## Primer procesamiento (18/10/2026)
 
-- Pelo de agua del DEM: **45,00 m** (≈ 1,00 m en el hidrómetro con el cero provisorio de 44 m).
-- Zonas con cero 44 m: 5,0 m → 812 ha · 7,4 m → 1.635 ha · 8,0 m → 1.871 ha.
-- Zonas con cero 40,5 m (versión vigente): 5,0 m → 25 ha · 6,2 m → 169 ha · 7,4 m → 423 ha · 8,0 m → 679 ha (fuera del cauce, en el área de estudio).
+- Pelo de agua del DEM: **45,00 m** (≈ 1,00 m en el hidrómetro con el cero de 44 m). Es un valor editado por
+  Copernicus, no una medición del río (ver [calibracion.md](calibracion.md)).
+- Zonas con cero 44 m (versión vigente, estimado con los hidrómetros del INA): 5,0 m → 812 ha · 7,4 m → 1.635 ha · 8,0 m → 1.871 ha.
+- Zonas con cero 40,5 m (calibración por edificios, descartada): 5,0 m → 25 ha · 6,2 m → 169 ha · 7,4 m → 423 ha · 8,0 m → 679 ha (fuera del cauce, en el área de estudio).
+- Si Supabase todavía tiene las zonas de 40,5 m, regenerarlas con `procesar.py paso-de-la-patria --subir`.
 - Escena 3D: 120.000 árboles y 9.812 edificios (Overture 2026-09-23.1).
 - Defensas aplicadas: 0 (todavía no hay datos).

@@ -119,6 +119,17 @@ button { font: inherit; cursor: pointer; }
 .simulador__atajos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .simulador__atajos button { box-shadow: none; }
 .simulador__atajos .simulador__play { background: var(--acento); color: #fff; border-color: var(--acento); font-weight: 600; }
+.simulador__subtitulo { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--tenue); margin-top: 10px; }
+.simulador__atajos--historicas { margin-top: 4px; }
+
+/* Gráfico de los últimos 30 días: SVG que se escala al ancho de la tarjeta. */
+.grafico { display: block; width: 100%; height: auto; margin-top: 6px; overflow: visible; }
+.grafico__eje { stroke: var(--borde); stroke-width: 1; }
+.grafico__linea { fill: none; stroke: var(--acento); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.grafico__punto { fill: var(--acento); stroke: var(--panel); stroke-width: 2; }
+.grafico__texto { font-size: 10px; fill: var(--tenue); font-variant-numeric: tabular-nums; }
+/* Contorno del color del panel para que el nombre del umbral se lea aunque lo cruce la curva. */
+.grafico__texto--umbral { font-weight: 700; paint-order: stroke; stroke: var(--panel); stroke-width: 3px; stroke-linejoin: round; }
 
 .leyenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
 .leyenda i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; opacity: 0.85; }

@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import type { SerieHistorica } from '../shared/fuentes/ina';
 import type { LecturaNivel } from '../shared/fuentes/nivel';
 import { getLocalidad, localidades, type Localidad } from '../shared/localidades';
 import { Mapa } from './components/Mapa';
@@ -6,6 +7,7 @@ import { Panel } from './components/Panel';
 import { superficieInundada } from './lib/inundacion';
 import { conDatosOperativos, terrenoProcesado, type TerrenoProcesado } from './lib/localidad';
 import { cargarModelo, type Modelo } from './lib/modelo';
+import { obtenerHistorico } from './lib/historico';
 import { obtenerNivel } from './lib/nivel';
 
 const params = new URLSearchParams(location.search);
@@ -21,6 +23,8 @@ export function App() {
   const [localidad, setLocalidad] = useState<Localidad | undefined>(base);
   const [terreno, setTerreno] = useState<TerrenoProcesado | null | undefined>(undefined);
   const [lectura, setLectura] = useState<LecturaNivel | null | undefined>(undefined);
+  // undefined: consultando; null: sin datos del INA (el panel oculta el gráfico).
+  const [historico, setHistorico] = useState<SerieHistorica | null | undefined>(undefined);
   const [modelo, setModelo] = useState<Modelo | null>(null);
   const [estadoModelo, setEstadoModelo] = useState('cargando');
   const [alturaSim, setAlturaSim] = useState<number | null>(null);
@@ -37,6 +41,7 @@ export function App() {
     });
     terrenoProcesado(base.id).then(setTerreno);
     obtenerNivel(base.id).then(setLectura);
+    obtenerHistorico(base).then(setHistorico);
     cargarModelo(base.id)
       .then((m) => {
         setModelo(m);
@@ -124,6 +129,7 @@ export function App() {
       <Panel
         localidad={localidad}
         lectura={lectura}
+        historico={historico}
         alturaSim={altura}
         onAlturaSim={(h) => {
           setReproduciendo(false);
