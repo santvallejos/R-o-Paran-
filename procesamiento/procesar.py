@@ -32,6 +32,11 @@ from relieve.inundacion import calcular_umbrales
 
 RAIZ = Path(__file__).resolve().parent.parent
 
+# La consola de Windows usa cp1252 y no puede imprimir caracteres como "≈": forzamos UTF-8
+# y reemplazamos lo que igual no se pueda mostrar, para que un log no corte el procesamiento.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 
 def log(msg: str) -> None:
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)

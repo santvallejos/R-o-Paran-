@@ -1,0 +1,10 @@
+{
+  "localidad": "itati",
+  "altura_m": 8.17,
+  "variacion_m": 0.02,
+  "fecha": "2026-10-18T22:00:00-03:00",
+  "estado": "EVACUACION CRECE",
+  "fuente": "Carga manual (último parte de Prefectura Naval)",
+  "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/",
+  "modo": "manual"
+}
