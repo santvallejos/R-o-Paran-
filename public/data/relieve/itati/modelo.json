@@ -1,0 +1,50 @@
+{
+  "ancho": 1283,
+  "alto": 788,
+  "esquinas": [
+    [
+      -58.300065994262695,
+      -27.244938829947962
+    ],
+    [
+      -58.189945220947266,
+      -27.244938829947962
+    ],
+    [
+      -58.189945220947266,
+      -27.305053612874918
+    ],
+    [
+      -58.300065994262695,
+      -27.305053612874918
+    ]
+  ],
+  "celda_m": 8.492,
+  "cotaCauce": 46.25,
+  "sinDato": 9000.0,
+  "localidad": "itati",
+  "fuenteDem": "Copernicus GLO-30",
+  "procesadoEn": "2026-10-19T01:41:15+00:00",
+  "cotaCero_m": 45.66,
+  "pasos": [
+    {
+      "correccion_cobertura": {
+        "arboles": 3.0,
+        "arbustos": 1.0,
+        "edificado": 2.0
+      },
+      "fuente": "ESA WorldCover 2021"
+    },
+    {
+      "filtro_mediana_px": 5
+    },
+    {
+      "defensas": 0
+    }
+  ],
+  "escena3d": {
+    "arboles": 120000,
+    "edificios": 4274,
+    "release_overture": "2026-09-23.1"
+  }
+}
