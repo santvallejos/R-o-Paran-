@@ -71,7 +71,8 @@ def main() -> int:
     ap.add_argument("--subir-archivos", action="store_true",
                     help="Al terminar, subir public/data/relieve/<id> al bucket `relieve` de Supabase Storage")
     ap.add_argument("--solo-subir-archivos", action="store_true",
-                    help="No reprocesar: sólo subir a Storage la carpeta public/data/relieve/<id> existente")
+                    help="No reprocesar: sólo subir a Storage la carpeta public/data/relieve/<id> existente "
+                         "(con --subir, también carga salida/<id>/version.json)")
     args = ap.parse_args()
 
     publico = RAIZ / "public" / "data" / "relieve" / args.localidad
@@ -80,6 +81,11 @@ def main() -> int:
         if not (publico / "modelo.json").exists():
             log(f"No hay modelo en {publico.relative_to(RAIZ)}: procesá la localidad primero.")
             return 1
+        # Con --subir, también carga las zonas ya calculadas (salida/<id>/version.json).
+        if args.subir:
+            ruta_version = RAIZ / "procesamiento" / "salida" / args.localidad / "version.json"
+            vid = supabase.cargar_version(json.loads(ruta_version.read_text()))
+            log(f"Versión de relieve {vid} cargada en Supabase desde {ruta_version.relative_to(RAIZ)}")
         subir_archivos(args.localidad, publico)
         return 0
 
