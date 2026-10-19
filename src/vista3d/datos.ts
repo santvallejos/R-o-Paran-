@@ -1,4 +1,6 @@
 // Datos de la escena 3D generados por procesamiento/relieve/escena3d.py.
+import { urlRelieve } from '../lib/relieve';
+
 export interface Arboles {
   /** x, z en metros locales (desde la esquina noroeste de la grilla del modelo) y escala. */
   x: Float32Array;
@@ -54,7 +56,8 @@ async function cobertura(url: string, n: number): Promise<Uint8Array> {
 }
 
 export async function cargarDatosEscena(localidad: string, celdas: number): Promise<DatosEscena> {
-  const base = `/data/relieve/${localidad}/escena`;
+  // Misma carpeta que el modelo: bucket de Supabase Storage o /data/relieve (ver lib/relieve.ts).
+  const base = `${urlRelieve(localidad)}/escena`;
   const [cob, arb, edif] = await Promise.all([
     cobertura(`${base}/cobertura.png`, celdas),
     fetch(`${base}/arboles.bin`).then((r) => (r.ok ? r.arrayBuffer() : new ArrayBuffer(0))),

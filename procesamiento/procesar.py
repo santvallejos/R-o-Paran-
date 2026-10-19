@@ -5,6 +5,8 @@ Procesa el relieve de una localidad y genera todo lo que usa la app.
     python procesar.py paso-de-la-patria                # Copernicus GLO-30 + correcciones
     python procesar.py paso-de-la-patria --dem mde.tif  # DEM propio (IGN, FABDEM, drone…)
     python procesar.py paso-de-la-patria --subir        # además, carga las zonas en Supabase
+    python procesar.py paso-de-la-patria --subir-archivos       # y sube public/data/relieve/<id> a Storage
+    python procesar.py paso-de-la-patria --solo-subir-archivos  # sólo sube lo ya generado, sin reprocesar
 
 Salidas:
     public/data/relieve/<id>/modelo.json, elev.png, umbral.png   modelo precalculado para la app
@@ -61,7 +63,20 @@ def main() -> int:
     ap.add_argument("--sin-tiles", action="store_true", help="No regenerar los tiles de relieve 3D")
     ap.add_argument("--sin-escena3d", action="store_true", help="No generar árboles, edificios y cobertura para la vista 3D")
     ap.add_argument("--subir", action="store_true", help="Cargar la versión y sus zonas en Supabase")
+    ap.add_argument("--subir-archivos", action="store_true",
+                    help="Al terminar, subir public/data/relieve/<id> al bucket `relieve` de Supabase Storage")
+    ap.add_argument("--solo-subir-archivos", action="store_true",
+                    help="No reprocesar: sólo subir a Storage la carpeta public/data/relieve/<id> existente")
     args = ap.parse_args()
+
+    publico = RAIZ / "public" / "data" / "relieve" / args.localidad
+    # Modo sólo subida: no hace falta la configuración de procesamiento ni bajar nada.
+    if args.solo_subir_archivos:
+        if not (publico / "modelo.json").exists():
+            log(f"No hay modelo en {publico.relative_to(RAIZ)}: procesá la localidad primero.")
+            return 1
+        subir_archivos(args.localidad, publico)
+        return 0
 
     loc = json.loads((RAIZ / "shared" / "localidades" / f"{args.localidad}.json").read_text())
     p = loc["procesamiento"]
@@ -69,7 +84,6 @@ def main() -> int:
     z = loc["dem"]["zoomModelo"]
     cache = RAIZ / "procesamiento" / "cache" / args.localidad
     salida = RAIZ / "procesamiento" / "salida" / args.localidad
-    publico = RAIZ / "public" / "data" / "relieve" / args.localidad
 
     # Área de tiles = área de estudio + margen; la grilla grande está alineada a tiles.
     m = p["margenTiles_grados"]
@@ -163,8 +177,10 @@ def main() -> int:
     if not args.sin_tiles:
         zmin, zmax = p["zoomTiles"]
         n = exportar.tiles_terreno(publico / "terreno", grande, elev, bbox_tiles, range(zmin, zmax + 1))
+        # `tiles` relativo a la carpeta de la localidad: la app lo resuelve contra /data/relieve/<id>
+        # o contra el bucket de Storage (src/lib/relieve.ts), según dónde estén los archivos.
         (publico / "terreno.json").write_text(
-            json.dumps({"tiles": f"/data/relieve/{args.localidad}/terreno/{{z}}/{{x}}/{{y}}.png", "minzoom": zmin, "maxzoom": zmax,
+            json.dumps({"tiles": "terreno/{z}/{x}/{y}.png", "minzoom": zmin, "maxzoom": zmax,
                         "bounds": [round(v, 5) for v in grande.bounds_lonlat], "encoding": "terrarium", "fuente": fuente_dem}, indent=2)
         )
         log(f"Tiles de relieve: {n}")
@@ -189,7 +205,16 @@ def main() -> int:
     if args.subir:
         vid = supabase.cargar_version(version)
         log(f"Versión de relieve {vid} cargada en Supabase con {len(zonas)} zonas")
+    if args.subir_archivos:
+        subir_archivos(args.localidad, publico)
     return 0
+
+
+def subir_archivos(localidad: str, publico: Path) -> None:
+    """Sube la carpeta del modelo, los tiles y la escena al bucket `relieve` de Storage."""
+    log(f"Subiendo {publico.relative_to(RAIZ)} a Supabase Storage (bucket {supabase.BUCKET})…")
+    n, total = supabase.subir_archivos(localidad, publico)
+    log(f"Storage: {n} archivos, {total / 1e6:.1f} MB en {supabase.BUCKET}/{localidad}/")
 
 
 if __name__ == "__main__":

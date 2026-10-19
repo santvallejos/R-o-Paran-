@@ -1,5 +1,5 @@
 {
-  "tiles": "/data/relieve/paso-de-la-patria/terreno/{z}/{x}/{y}.png",
+  "tiles": "terreno/{z}/{x}/{y}.png",
   "minzoom": 10,
   "maxzoom": 14,
   "bounds": [
