@@ -14,7 +14,8 @@
     "nombre": "Hidrómetro del puerto de Paso de la Patria",
     "cotaCero_m": 44.0,
     "cotaCeroProvisoria": true,
-    "puertoPrefectura": "PASO DE LA PATRIA"
+    "puertoPrefectura": "PASO DE LA PATRIA",
+    "notaCalibracion": "Estimado con los hidrómetros del INA de Itatí y Corrientes (cero IGN), interpolando la pendiente del río. A confirmar con el dato oficial."
   },
   "umbrales": [
     { "nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b" },

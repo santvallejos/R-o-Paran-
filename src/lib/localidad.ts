@@ -23,7 +23,8 @@ export async function conDatosOperativos(loc: Localidad): Promise<Localidad> {
       ...loc,
       hidrometro: { ...loc.hidrometro, cotaCero_m: Number(f.cota_cero_m), cotaCeroProvisoria: f.cota_cero_provisoria },
       umbrales: f.umbrales?.length ? f.umbrales : loc.umbrales,
-      pronostico: f.pronostico ?? undefined,
+      // Si Supabase no tiene pronóstico, queda el del repo (antes se perdía).
+      pronostico: f.pronostico ?? loc.pronostico,
     };
   } catch {
     return loc;
