@@ -30,7 +30,7 @@ Se publica solo en Vercel con cada push a `claude/mvp-paso-de-la-patria` (rama d
 - **Simulador**: control deslizante (5 → 9,6 m, para llegar al pico de 1983) que muestra en rojo lo que se suma si el río sube y en verde lo que se libera si baja.
   Atajos a "Hoy", "Alerta" y "Pico pronosticado".
 - **Conectividad hidráulica**: sólo se inunda lo conectado al río, no cualquier pozo más bajo.
-- Mapa (MapLibre + relieve exagerado ×4), satélite (Esri) / calles (OpenFreeMap), vista 2D, ubicación del usuario.
+- Mapa (MapLibre + relieve exagerado ×4), satélite (EOxCloudless) / calles (OpenFreeMap), vista 2D, ubicación del usuario.
 - **Vista 3D** (three.js): maqueta estilizada del pueblo con el monte (ESA WorldCover) y los 9.812 edificios de
   Overture Maps. El agua sube con el simulador y los edificios alcanzados se pintan. Tocando un edificio, se ve
   a qué altura del río le llega el agua. **▶ Simular subida** anima la crecida en las dos vistas. Ver

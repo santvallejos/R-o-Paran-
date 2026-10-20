@@ -36,7 +36,7 @@
     "encoding": "terrarium",
     "zoomModelo": 14,
     "maxzoom": 15,
-    "attribution": "Relieve: Mapzen Terrain Tiles (SRTM, NASA)"
+    "attribution": "Relieve: Mapzen Terrain Tiles. SRTM y GMTED2010 cortesía del U.S. Geological Survey; ETOPO1, U.S. National Oceanic and Atmospheric Administration"
   },
   "procesamiento": {
     "fuente": "copernicus-glo30",
