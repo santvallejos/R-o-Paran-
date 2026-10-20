@@ -7,6 +7,7 @@ import type { Localidad } from '../../shared/localidades';
 import { pintarCapa } from '../lib/capa';
 import type { TerrenoProcesado } from '../lib/localidad';
 import type { Modelo } from '../lib/modelo';
+import { atribucionRelieve } from '../lib/creditos';
 import { agregarCalles, aplicarBase, CAPAS_BASE, FUENTES_BASE, type Base } from '../lib/mapaBase';
 
 // El bundler no sigue el worker interno de MapLibre: se le indica la URL explícita.
@@ -25,7 +26,7 @@ function estilo(loc: Localidad, t: TerrenoProcesado | null): StyleSpecification 
   const dem = t
     ? { tiles: [t.tiles], encoding: t.encoding, minzoom: t.minzoom, maxzoom: t.maxzoom, bounds: t.bounds }
     : { tiles: [loc.dem.tiles], encoding: loc.dem.encoding, maxzoom: loc.dem.maxzoom };
-  const atribucion = t ? `Relieve: ${t.fuente} procesado, ESA WorldCover` : loc.dem.attribution;
+  const atribucion = t ? atribucionRelieve(t.fuente) : loc.dem.attribution;
   return {
     version: 8,
     sources: {
@@ -67,7 +68,8 @@ export function Mapa({ localidad, terreno, modelo, cotaSim, cotaActual }: Props)
   const mapa = useRef<maplibregl.Map | null>(null);
   const buffer = useRef<ImageData | null>(null);
   const [listo, setListo] = useState(false);
-  const [base, setBase] = useState<Base>('satelite');
+  // Calles por defecto: el satélite (~10 m) no distingue casas a la escala del pueblo.
+  const [base, setBase] = useState<Base>('calles');
   // Ids de las capas de calles (OpenFreeMap), que se agregan cuando el mapa termina de cargar.
   const [calles, setCalles] = useState<string[]>([]);
   const [tresD, setTresD] = useState(true);

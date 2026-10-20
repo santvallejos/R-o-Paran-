@@ -143,6 +143,24 @@ Qué datos faltan y cómo cargarlos para mejorar la estimación: [MEJORAS-DATOS.
   La capa de la app no, porque usa cotas absolutas.
 - Falta la capa de agua observada por satélite (Sentinel-1) → Fase 3.
 
+## Fuentes y licencias de los datos
+
+Proyecto educativo y sin fines comerciales. Los textos de atribución que exigen las licencias están en
+`src/lib/creditos.ts` y se muestran en el mapa, en la vista 3D y en "Más info".
+
+| Dato | Fuente | Licencia / condiciones |
+|---|---|---|
+| Altura del río | Prefectura Naval Argentina | Información pública (Ley 27.275) |
+| Serie histórica | INA, API a5 | Información pública (Ley 27.275) |
+| Relieve | Copernicus WorldDEM-30 (GLO-30) | Licencia Copernicus: aviso de DLR/Airbus y deslinde de responsabilidad |
+| Cobertura del suelo | ESA WorldCover 2021 | CC BY 4.0 |
+| Edificios | Overture Maps (OSM, Microsoft, Esri Community Maps, Google Open Buildings) | ODbL. Los `edificios.json` publicados son una base derivada bajo ODbL |
+| Imagen satelital | EOxCloudless 2025 (Sentinel-2, ~10 m), EOX IT Services GmbH | CC BY-NC-SA 4.0: solo uso no comercial, atribución con enlaces |
+| Calles | OpenFreeMap / OpenMapTiles / OpenStreetMap | ODbL; atribución obligatoria |
+
+The organisations in charge of the Copernicus programme by law or by delegation do not incur any liability for any use
+of the Copernicus WorldDEM-30.
+
 ## Próximos pasos
 
 - Confirmar el cero del hidrómetro con el dato oficial de INA / Prefectura (hoy interpolado entre Itatí y Corrientes).

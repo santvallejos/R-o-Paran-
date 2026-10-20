@@ -11,14 +11,19 @@ const ESTILO_CALLES = 'https://tiles.openfreemap.org/styles/positron';
 /** Prefijo de las capas y fuentes de calles, para no chocar con las del mapa. */
 const PREFIJO = 'calles-';
 
-/** Fuente raster del satélite; la comparten el mapa de la localidad y el regional. */
+/**
+ * Fuente raster del satélite; la comparten el mapa de la localidad y el regional.
+ * EOxCloudless 2025 (Sentinel-2, ~10 m): libre para uso no comercial (CC BY-NC-SA 4.0) con la
+ * atribución y los enlaces que pide EOX. Más allá de z14 MapLibre estira las teselas.
+ */
 export const FUENTES_BASE = {
   satelite: {
     type: 'raster',
-    tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+    tiles: ['https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg'],
     tileSize: 256,
-    maxzoom: 19,
-    attribution: 'Imágenes © Esri, Maxar, Earthstar Geographics',
+    maxzoom: 14,
+    attribution:
+      '<a href="https://cloudless.eox.at">EOxCloudless https://cloudless.eox.at</a> by <a href="https://eox.at">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2025), <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>',
   },
 } satisfies StyleSpecification['sources'];
 

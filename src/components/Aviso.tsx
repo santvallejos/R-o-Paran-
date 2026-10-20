@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AVISO_COPERNICUS_DEM, AVISO_EDIFICIOS, AVISO_WORLDCOVER, DESLINDE_COPERNICUS } from '../lib/creditos';
 
 /**
  * Aviso fijo arriba de cada pantalla (mapa regional y localidad).
@@ -26,6 +27,12 @@ export function Aviso() {
           municipio y Defensa Civil).
         </p>
         <p>Ante una crecida o una emergencia, seguí siempre las indicaciones oficiales.</p>
+        <p className="aviso__licencias">
+          Relieve {AVISO_COPERNICUS_DEM}. {DESLINDE_COPERNICUS} Cobertura: {AVISO_WORLDCOVER}. {AVISO_EDIFICIOS}: la base derivada de
+          edificios que publica esta app queda bajo la misma licencia ODbL. Imagen satelital: EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH
+          (Contains modified Copernicus Sentinel data 2025), CC BY-NC-SA 4.0. Calles: OpenFreeMap, © OpenMapTiles, ©
+          OpenStreetMap contributors.
+        </p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Localidad } from '../../shared/localidades';
+import { AVISO_COPERNICUS_DEM, AVISO_EDIFICIOS, AVISO_WORLDCOVER } from '../lib/creditos';
 import { lonLatAPixel } from '../lib/geo';
 import type { Modelo } from '../lib/modelo';
 import { cargarDatosEscena, type DatosEscena, type Edificio } from './datos';
@@ -99,20 +100,20 @@ export default function Escena3D({ localidad, modelo, cotaSim, cotaActual, cotaC
   // cargaron, la cobertura (WorldCover, también da los árboles) y los edificios (Overture).
   const creditos = useMemo(() => {
     const { fuenteDem, precalculado } = modelo.meta;
-    // Copernicus pide nombrar a DLR / Airbus; sin relieve procesado vale la atribución de la configuración.
+    // Sin relieve procesado vale la atribución de la configuración.
     const copernicus = /copernicus/i.test(fuenteDem);
-    const relieve = precalculado ? `Relieve: ${fuenteDem}${copernicus ? ' © DLR / Airbus' : ''}` : localidad.dem.attribution;
+    const relieve = precalculado ? (copernicus ? `Relieve ${AVISO_COPERNICUS_DEM}` : `Relieve: ${fuenteDem}`) : localidad.dem.attribution;
     const relieveCorto = precalculado ? (copernicus ? '© Copernicus DEM' : fuenteDem) : localidad.dem.attribution;
     const conCobertura = !!datos && (datos.cobertura.some((v) => v !== 0) || datos.arboles.x.length > 0);
     const conEdificios = !!datos && datos.edificios.length > 0;
     const largo = [relieve];
     const corto = [relieveCorto];
     if (conCobertura) {
-      largo.push('Cobertura © ESA WorldCover');
+      largo.push(`Cobertura ${AVISO_WORLDCOVER}`);
       corto.push('ESA WorldCover');
     }
     if (conEdificios) {
-      largo.push('Edificios: Overture Maps (© OpenStreetMap, Microsoft, Google)');
+      largo.push(AVISO_EDIFICIOS);
       corto.push('Overture Maps / OpenStreetMap');
     }
     largo.push(`Exageración vertical ×${EXAG}`);

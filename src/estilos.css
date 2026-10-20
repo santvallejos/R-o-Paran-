@@ -47,6 +47,7 @@ button { font: inherit; cursor: pointer; }
 /* Detalle desplegado: texto alineado a la izquierda y ancho de lectura acotado. */
 .aviso__detalle { max-width: 640px; margin: 6px auto 2px; text-align: left; }
 .aviso__detalle p { margin: 6px 0; }
+.aviso__detalle .aviso__licencias { font-size: 11px; opacity: 0.8; }
 
 .mapa, .mapa__lienzo { position: absolute; inset: 0; }
 .selector-vista {
