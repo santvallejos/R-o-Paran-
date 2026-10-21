@@ -178,7 +178,7 @@ def main() -> int:
         e3.mkdir(parents=True, exist_ok=True)
         cfg3 = p.get("escena3d", {})
         escena3d.cobertura_png(e3, cob[fil, col])
-        n_arb = escena3d.arboles(e3, modelo, cob[fil, col], cauce, cfg3.get("densidadArboles", 0.55), cfg3.get("maxArboles", 120000))
+        n_arb = escena3d.arboles(e3, modelo, cob[fil, col], cauce, cfg3.get("densidadArboles", 0.55), cfg3.get("maxArboles", 25000))
         log("Bajando edificios (Overture Maps)…")
         info = escena3d.edificios(e3, modelo, fuentes.edificios_overture(loc["bbox"], cache), elev_m, umbral)
         log(f"Escena 3D: {n_arb} árboles, {info['edificios']} edificios (Overture {info['release_overture']})")

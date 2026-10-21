@@ -4,7 +4,7 @@ import { AVISO_COPERNICUS_DEM, AVISO_EDIFICIOS, AVISO_WORLDCOVER } from '../lib/
 import { lonLatAPixel } from '../lib/geo';
 import type { Modelo } from '../lib/modelo';
 import { cargarDatosEscena, type DatosEscena, type Edificio } from './datos';
-import { EXAG, EscenaCrecida, type Calidad } from './escena';
+import { EXAG, EscenaCrecida } from './escena';
 import './escena3d.css';
 
 interface Props {
@@ -17,25 +17,11 @@ interface Props {
 
 const m = (h: number) => `${h.toFixed(2).replace('.', ',')} m`;
 
-function calidadInicial(): Calidad {
-  const guardada = (() => {
-    try {
-      return localStorage.getItem('calidad3d');
-    } catch {
-      return null;
-    }
-  })();
-  if (guardada === 'alta' || guardada === 'baja') return guardada;
-  const movil = matchMedia('(pointer: coarse)').matches || innerWidth < 820 || (navigator.hardwareConcurrency ?? 8) <= 4;
-  return movil ? 'baja' : 'alta';
-}
-
 export default function Escena3D({ localidad, modelo, cotaSim, cotaActual, cotaCero }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const escena = useRef<EscenaCrecida | null>(null);
   const [datos, setDatos] = useState<DatosEscena | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [calidad, setCalidad] = useState<Calidad>(calidadInicial);
   const [sel, setSel] = useState<{ indice: number; edificio: Edificio } | null>(null);
 
   useEffect(() => {
@@ -61,7 +47,6 @@ export default function Escena3D({ localidad, modelo, cotaSim, cotaActual, cotaC
     const centro = local(...localidad.centro);
     const rio = local(...localidad.semillasRio[0]);
     const e = new EscenaCrecida(contenedor.current, modelo, datos, {
-      calidad,
       centro,
       // En el celular el panel tapa la mitad de abajo: la escena se centra más arriba.
       desplazamiento: innerWidth < 820 ? 0.22 : 0,
@@ -76,13 +61,13 @@ export default function Escena3D({ localidad, modelo, cotaSim, cotaActual, cotaC
       e.dispose();
       escena.current = null;
     };
-    // La escena se reconstruye sólo si cambian los datos o la calidad.
+    // La escena se reconstruye sólo si cambian los datos.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datos, calidad]);
+  }, [datos]);
 
   useEffect(() => {
     escena.current?.setNivel(cotaSim, cotaActual);
-  }, [cotaSim, cotaActual, datos, calidad]);
+  }, [cotaSim, cotaActual, datos]);
 
   const conteo = useMemo(() => {
     if (!datos) return null;
@@ -120,17 +105,6 @@ export default function Escena3D({ localidad, modelo, cotaSim, cotaActual, cotaC
     corto.push(`Vertical ×${EXAG}`);
     return { largo: largo.join(' · '), corto: corto.join(' · ') };
   }, [modelo.meta, localidad.dem.attribution, datos]);
-
-  const cambiarCalidad = () => {
-    const nueva: Calidad = calidad === 'alta' ? 'baja' : 'alta';
-    try {
-      localStorage.setItem('calidad3d', nueva);
-    } catch {
-      /* sin almacenamiento: sólo para esta visita */
-    }
-    setSel(null);
-    setCalidad(nueva);
-  };
 
   return (
     <div className="escena3d" ref={contenedor}>
@@ -176,9 +150,6 @@ export default function Escena3D({ localidad, modelo, cotaSim, cotaActual, cotaC
         <li><i style={{ background: '#eee8df', outline: '1px solid #bbb' }} /> Edificio seco</li>
       </ul>
 
-      <button type="button" className="escena3d__calidad" onClick={cambiarCalidad}>
-        Calidad {calidad === 'alta' ? 'alta' : 'baja'}
-      </button>
       <div className="escena3d__creditos">
         <span className="escena3d__creditos-largo">{creditos.largo}</span>
         <span className="escena3d__creditos-corto">{creditos.corto}</span>

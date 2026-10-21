@@ -22,15 +22,17 @@ engañan. Los árboles van ×1,6, porque son decorativos.
 
 ## Calidad
 
-| | Alta (escritorio) | Baja (celular, por defecto) |
-|---|---|---|
-| Malla del terreno | cada 2 celdas (~17 m) | cada 3 celdas (~25 m) |
-| Árboles | 90.000, copa + tronco | 25.000, copa simple |
-| Sombras | sí (mapa 4096) | no |
-| Antialias / pixel ratio | sí / hasta 2 | no / hasta 1,5 |
+Hay una sola calidad, liviana, igual en celular y escritorio (la alta consumía mucho más y no aportaba a la
+lectura de la crecida):
 
-Se elige sola según el dispositivo y se puede cambiar con el botón (se recuerda en el navegador). La escena se
-dibuja sólo cuando algo cambia, no en cada cuadro, para cuidar la batería.
+| | |
+|---|---|
+| Malla del terreno | cada 3 celdas (~25 m) |
+| Árboles | hasta 25.000, copa simple |
+| Sombras | no |
+| Antialias / pixel ratio | no / hasta 1,5 |
+
+La escena se dibuja sólo cuando algo cambia, no en cada cuadro, para cuidar la batería.
 
 Requiere WebGL 2 (texturas de media precisión filtrables).
 

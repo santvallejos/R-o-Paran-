@@ -26,17 +26,12 @@
   background: rgb(255 255 255 / 0.9); color: #0f172a; border-radius: 10px; font-size: 12px; display: grid; gap: 3px;
 }
 .escena3d__leyenda i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-.escena3d__calidad {
-  position: absolute; right: 12px; top: 104px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a;
-  border-radius: 999px; padding: 6px 12px; font-size: 13px;
-}
 .escena3d__creditos {
   position: absolute; left: 8px; right: 8px; bottom: calc(50dvh + 4px); font-size: 10px; line-height: 1.3; color: #334155;
   pointer-events: none; text-shadow: 0 0 3px #fff, 0 0 2px #fff;
 }
 @media (max-width: 819px) {
   .escena3d__leyenda { display: none; }
-  .escena3d__tarjetas { right: 124px; }
   .escena3d__resumen, .escena3d__ficha { font-size: 13px; }
   .escena3d__creditos-largo { display: none; }
 }
@@ -44,6 +39,5 @@
   .escena3d__tarjetas { right: auto; width: 420px; }
   .escena3d__creditos-corto { display: none; }
   .escena3d__leyenda { right: 464px; top: auto; bottom: 34px; }
-  .escena3d__calidad { right: 464px; bottom: auto; top: 104px; }
   .escena3d__creditos { bottom: 8px; right: 464px; left: auto; max-width: 520px; text-align: right; }
 }

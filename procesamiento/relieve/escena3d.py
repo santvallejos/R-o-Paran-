@@ -38,7 +38,7 @@ def arboles(destino: Path, grilla: Grilla, cobertura: np.ndarray, cauce: np.ndar
     if f.size > maximo:
         idx = rng.choice(f.size, maximo, replace=False)
         f, c = f[idx], c[idx]
-    # orden aleatorio: la app puede tomar los primeros N según la calidad y queda parejo
+    # orden aleatorio: la app puede tomar los primeros N y queda parejo
     orden = rng.permutation(f.size)
     f, c = f[orden], c[orden]
     cel = grilla.celda_m

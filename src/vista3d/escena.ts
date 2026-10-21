@@ -6,10 +6,7 @@ import { MapControls } from 'three/addons/controls/MapControls.js';
 import type { Modelo } from '../lib/modelo';
 import type { DatosEscena, Edificio } from './datos';
 
-export type Calidad = 'alta' | 'baja';
-
 export interface OpcionesEscena {
-  calidad: Calidad;
   /** Punto que queda en el centro de la vista, en metros locales de la grilla. */
   centro: [number, number];
   /** Etiquetas fijas (nombre del pueblo, río…), en metros locales. */
@@ -27,7 +24,7 @@ const PALETA: Record<number, string> = {
 const COLOR_SUELO = '#cdbb88';
 
 /**
- * Cámara, niebla, límites de zoom y sombras como fracción del lado mayor del modelo (m).
+ * Cámara, niebla, límites de zoom y sol como fracción del lado mayor del modelo (m).
  * Los factores salen de los valores ajustados a mano para Paso de la Patria
  * (1283 × 787 px de 8,49 m → lado mayor ≈ 10 890 m), así otras localidades
  * con un área más grande o más chica quedan encuadradas igual.
@@ -40,9 +37,12 @@ const ESCALA = {
   distanciaMax: 0.83, // ≈ 9000
   lejos: 3.7, // plano lejano de la cámara (≈ 40 000)
   sol: [-0.32, 0.29, -0.2], // ≈ (−3500, 3200, −2200)
-  sombra: 0.41, // medio lado del área con sombras (≈ 4500)
-  sombraLejos: 1.1, // ≈ 12 000
 } as const;
+
+// Una sola calidad, liviana: sin sombras ni antialias, malla cada 3 celdas y árboles simples.
+const PASO_TERRENO = 3;
+const MAX_ARBOLES = 25000;
+const MAX_PIXEL_RATIO = 1.5;
 
 export class EscenaCrecida {
   private renderer: THREE.WebGLRenderer;
@@ -67,15 +67,13 @@ export class EscenaCrecida {
     private datos: DatosEscena,
     private op: OpcionesEscena,
   ) {
-    const alta = op.calidad === 'alta';
     this.cx = op.centro[0];
     this.cz = op.centro[1];
     // Referencia vertical: el pelo de agua permanente del modelo.
     this.base = mediana(m.elev, m.cauce);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: alta, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, alta ? 2 : 1.5));
-    this.renderer.shadowMap.enabled = alta;
+    this.renderer = new THREE.WebGLRenderer({ antialias: false });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, MAX_PIXEL_RATIO));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     contenedor.appendChild(this.renderer.domElement);
@@ -99,22 +97,13 @@ export class EscenaCrecida {
 
     this.escena.add(new THREE.HemisphereLight('#f4efe4', '#8a7a5c', 1.15));
     const sol = new THREE.DirectionalLight('#fff3dd', 2.6);
-    // El sol se aleja con el área para que la cámara de sombras la cubra entera.
     sol.position.set(...(ESCALA.sol.map((f) => f * L) as [number, number, number]));
-    sol.castShadow = alta;
-    if (alta) {
-      sol.shadow.mapSize.set(4096, 4096);
-      const s = ESCALA.sombra * L;
-      Object.assign(sol.shadow.camera, { left: -s, right: s, top: s, bottom: -s, near: 100, far: ESCALA.sombraLejos * L });
-      sol.shadow.bias = -0.0004;
-      sol.shadow.normalBias = 3;
-    }
     this.escena.add(sol, sol.target);
 
-    this.crearTerreno(alta ? 2 : 3, alta);
+    this.crearTerreno(PASO_TERRENO);
     this.agua = this.crearAgua(sol.position.clone().normalize());
-    this.crearMonte(alta);
-    this.crearEdificios(alta);
+    this.crearMonte();
+    this.crearEdificios();
     for (const e of op.etiquetas) this.agregarEtiqueta(e.texto, e.x, e.z);
 
     this.observador = new ResizeObserver(() => this.redimensionar());
@@ -189,7 +178,7 @@ export class EscenaCrecida {
     return elev[f * ancho + c];
   }
 
-  private crearTerreno(paso: number, alta: boolean) {
+  private crearTerreno(paso: number) {
     const { ancho: W, alto: H, celda_m: C, elev, cauce } = this.m;
     const cob = this.datos.cobertura;
     const nx = Math.floor((W - 1) / paso) + 1;
@@ -234,9 +223,7 @@ export class EscenaCrecida {
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     geo.setIndex(new THREE.BufferAttribute(indices, 1));
     geo.computeVertexNormals();
-    const terreno = new THREE.Mesh(geo, this.guardar(new THREE.MeshLambertMaterial({ vertexColors: true })));
-    terreno.receiveShadow = alta;
-    this.escena.add(terreno);
+    this.escena.add(new THREE.Mesh(geo, this.guardar(new THREE.MeshLambertMaterial({ vertexColors: true }))));
   }
 
   private texturaHalf(datos: Float32Array): THREE.DataTexture {
@@ -331,14 +318,12 @@ export class EscenaCrecida {
     return agua;
   }
 
-  private crearMonte(alta: boolean) {
+  private crearMonte() {
     const { x, z, escala } = this.datos.arboles;
-    const total = alta ? Math.min(x.length, 90000) : Math.min(x.length, 25000);
+    const total = Math.min(x.length, MAX_ARBOLES);
     if (!total) return;
-    const copa = new THREE.IcosahedronGeometry(1, alta ? 1 : 0).scale(4.2, 3.4, 4.2).translate(0, 7.5, 0);
-    const piezas = [conColor(copa, '#ffffff')];
-    if (alta) piezas.push(conColor(new THREE.CylinderGeometry(0.35, 0.5, 5, 5).translate(0, 2.5, 0), '#6b5a43'));
-    const geo = this.guardar(unir(piezas));
+    const copa = new THREE.IcosahedronGeometry(1, 0).scale(4.2, 3.4, 4.2).translate(0, 7.5, 0);
+    const geo = this.guardar(conColor(copa, '#ffffff'));
     const mat = this.guardar(new THREE.MeshLambertMaterial({ vertexColors: true }));
     const monte = this.guardar(new THREE.InstancedMesh(geo, mat, total));
     // Los árboles vienen en orden aleatorio: tomar los primeros N deja la densidad pareja.
@@ -352,11 +337,10 @@ export class EscenaCrecida {
       monte.setMatrixAt(i, d.matrix);
       monte.setColorAt(i, verde.setHSL(0.22 + 0.05 * Math.sin(i), 0.42, 0.24 + 0.06 * Math.cos(i * 0.7)));
     }
-    monte.castShadow = monte.receiveShadow = alta;
     this.escena.add(monte);
   }
 
-  private crearEdificios(alta: boolean) {
+  private crearEdificios() {
     const eds = this.datos.edificios;
     if (!eds.length) return;
     // Paredes y techo armados a mano en un único buffer (mucho más rápido que ExtrudeGeometry).
@@ -418,7 +402,6 @@ export class EscenaCrecida {
         );
     };
     this.ciudad = new THREE.Mesh(geo, mat);
-    this.ciudad.castShadow = this.ciudad.receiveShadow = alta;
     this.escena.add(this.ciudad);
   }
 
@@ -471,23 +454,6 @@ function conColor(g: THREE.BufferGeometry, hex: string): THREE.BufferGeometry {
   ng.setAttribute('color', new THREE.BufferAttribute(col, 3));
   ng.deleteAttribute('uv');
   return ng;
-}
-
-function unir(gs: THREE.BufferGeometry[]): THREE.BufferGeometry {
-  if (gs.length === 1) return gs[0];
-  const attrs = ['position', 'normal', 'color'] as const;
-  const out = new THREE.BufferGeometry();
-  for (const a of attrs) {
-    const partes = gs.map((g) => g.getAttribute(a).array as Float32Array);
-    const total = new Float32Array(partes.reduce((s, p) => s + p.length, 0));
-    let o = 0;
-    for (const p of partes) {
-      total.set(p, o);
-      o += p.length;
-    }
-    out.setAttribute(a, new THREE.BufferAttribute(total, 3));
-  }
-  return out;
 }
 
 function mediana(elev: Float32Array, cauce: Uint8Array): number {

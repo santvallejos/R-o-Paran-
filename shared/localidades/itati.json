@@ -45,7 +45,7 @@
     "filtroMediana_px": 5,
     "nivelesZonas_m": { "desde": 5.0, "hasta": 10.2, "paso": 0.1 },
     "simplificarZonas_m": 12,
-    "escena3d": { "densidadArboles": 0.55, "maxArboles": 120000 }
+    "escena3d": { "densidadArboles": 0.55, "maxArboles": 25000 }
   },
   "fuentes": [
     { "nombre": "Prefectura Naval — Alturas de los ríos", "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/" },
