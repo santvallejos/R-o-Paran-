@@ -1,0 +1,13 @@
+{
+  "tiles": "terreno/{z}/{x}/{y}.png",
+  "minzoom": 10,
+  "maxzoom": 14,
+  "bounds": [
+    -59.10645,
+    -34.27084,
+    -58.79883,
+    -34.03445
+  ],
+  "encoding": "terrarium",
+  "fuente": "Copernicus GLO-30"
+}

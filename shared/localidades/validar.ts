@@ -1,4 +1,6 @@
 import type { Localidad, LonLat } from './types.js';
+// El JSON y no `regiones.ts`: `scripts/` importa este archivo con Node sin empaquetar, que no resuelve `.js` → `.ts`.
+import regiones from './regiones.json' with { type: 'json' };
 
 // Tolerancia para comparar alturas en metros (evita falsos errores por redondeo de flotantes).
 const EPS = 1e-9;
@@ -15,6 +17,9 @@ export function validarLocalidad(loc: Localidad): string[] {
   const error = (msg: string) => errores.push(`${loc.id || '(sin id)'}: ${msg}`);
 
   if (!ID_VALIDO.test(loc.id)) error(`id "${loc.id}" inválido (sólo minúsculas, números y guiones)`);
+  if (!loc.provincia?.trim()) error('falta provincia');
+  // Sin región conocida la localidad no aparecería en el selector ni en la lista regional.
+  if (!regiones.some((r) => r.id === loc.region)) error(`region "${loc.region}" desconocida (opciones: ${regiones.map((r) => r.id).join(', ')})`);
 
   // Área de estudio: [oeste, sur, este, norte], con los bordes en el orden correcto.
   const [oeste, sur, este, norte] = loc.bbox;

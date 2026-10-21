@@ -1,0 +1,58 @@
+{
+  "id": "campana",
+  "nombre": "Campana",
+  "provincia": "Buenos Aires",
+  "region": "bajo-parana",
+  "rio": "Paraná de las Palmas",
+  "centro": [-58.958, -34.162],
+  "zoom": 13.4,
+  "bbox": [-59.01, -34.19, -58.90, -34.125],
+  "semillasRio": [
+    [-58.960, -34.1528],
+    [-58.930, -34.150],
+    [-58.975, -34.1315]
+  ],
+  "hidrometro": {
+    "nombre": "Hidrómetro del puerto de Campana",
+    "cotaCero_m": 0.418,
+    "cotaCeroProvisoria": false,
+    "puertoPrefectura": "CAMPANA",
+    "notaCalibracion": "Cero 0,418 m respecto del cero IGN (mareógrafo de Mar del Plata), nivelado por el IGN y el INA en diciembre de 2016 (INA, informe LHA 02-373-18). En dos puntos de nivelación del IGN cerca del río el relieve queda unos 0,2 m por debajo de la cota oficial. Contra crecidas reales: con la sudestada del 19/12/2023 (2,45 m) San Cayetano quedó seco, como en el modelo; en abril de 2016, con 2,45 m, el agua llegó a la calle Alem, que el modelo inunda recién cerca de 2,9 m. En el Delta la marea y el viento (sudestada) mueven el río más de un metro en el día, y Prefectura publica la altura cada 12 h."
+  },
+  "umbrales": [
+    { "nombre": "Alerta", "altura_m": 2.2, "color": "#f59e0b" },
+    { "nombre": "Evacuación", "altura_m": 2.45, "color": "#dc2626" }
+  ],
+  "simulador": { "min_m": 0.4, "max_m": 3.1, "paso_m": 0.05 },
+  "ina": { "serieAltura": 41 },
+  "crecidasHistoricas": [
+    { "nombre": "1983", "altura_m": 2.72, "fecha": "1983-07-24" },
+    { "nombre": "1998", "altura_m": 2.7, "fecha": "1998-05-15" },
+    { "nombre": "Sudestada 2000", "altura_m": 3.0, "fecha": "2000-05-17" },
+    { "nombre": "2016", "altura_m": 2.65, "fecha": "2016-04-19" },
+    { "nombre": "Sudestada 2023", "altura_m": 2.45, "fecha": "2023-12-19" }
+  ],
+  "dem": {
+    "nombre": "Terrarium (SRTM/Copernicus, ~30 m)",
+    "tiles": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+    "encoding": "terrarium",
+    "zoomModelo": 14,
+    "maxzoom": 15,
+    "attribution": "Relieve: Mapzen Terrain Tiles. SRTM y GMTED2010 cortesía del U.S. Geological Survey; ETOPO1, U.S. National Oceanic and Atmospheric Administration"
+  },
+  "procesamiento": {
+    "fuente": "copernicus-glo30",
+    "margenTiles_grados": 0.08,
+    "zoomTiles": [10, 14],
+    "correccionCobertura_m": { "arboles": 3.0, "arbustos": 1.0, "edificado": 2.0 },
+    "filtroMediana_px": 5,
+    "nivelesZonas_m": { "desde": 0.4, "hasta": 3.1, "paso": 0.1 },
+    "simplificarZonas_m": 12,
+    "escena3d": { "densidadArboles": 0.55, "maxArboles": 25000 }
+  },
+  "fuentes": [
+    { "nombre": "Prefectura Naval — Alturas de los ríos", "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/" },
+    { "nombre": "INA — Sistema de Alerta Hidrológico", "url": "https://www.ina.gob.ar/alerta/" },
+    { "nombre": "INA — Datos hidrológicos (API a5)", "url": "https://alerta.ina.gob.ar/pub/mapa" }
+  ]
+}

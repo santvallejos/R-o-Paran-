@@ -20,6 +20,8 @@ export interface Localidad {
   id: string;
   nombre: string;
   provincia: string;
+  /** Id de la región (`regiones.json`) con la que se agrupa en el selector y en el mapa regional. */
+  region: string;
   rio: string;
 
   /** Vista inicial del mapa. */

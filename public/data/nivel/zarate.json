@@ -1,0 +1,10 @@
+{
+  "localidad": "zarate",
+  "altura_m": 0.81,
+  "variacion_m": 0.05,
+  "fecha": "2026-10-21T00:00:00-03:00",
+  "estado": "CRECE",
+  "fuente": "Carga manual (último parte de Prefectura Naval)",
+  "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/",
+  "modo": "manual"
+}

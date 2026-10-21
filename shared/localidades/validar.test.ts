@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getLocalidad, listarLocalidades, localidades, type Localidad } from './index';
+import { agruparPorRegion, getLocalidad, listarLocalidades, localidades, regiones, type Localidad } from './index';
 import { validarLocalidad } from './validar';
 
 // Copia profunda de una localidad válida, con los cambios que pida cada caso de error.
@@ -25,6 +25,35 @@ describe('registro de localidades', () => {
     const nombres = listarLocalidades().map((l) => l.nombre);
     expect(nombres).toEqual([...nombres].sort((a, b) => a.localeCompare(b, 'es')));
     expect(nombres).toEqual(expect.arrayContaining(['Itatí', 'Paso de la Patria']));
+  });
+});
+
+describe('agruparPorRegion', () => {
+  it('agrupa todas las localidades registradas, cada una una sola vez', () => {
+    const ids = agruparPorRegion(listarLocalidades()).flatMap((g) => g.localidades.map((l) => l.id));
+    expect(ids.sort()).toEqual(Object.keys(localidades).sort());
+  });
+
+  it('respeta el orden de las regiones, ordena por nombre y junta las provincias', () => {
+    const base = localidades['paso-de-la-patria'];
+    const loc = (nombre: string, region: string, provincia: string): Localidad => ({ ...base, id: nombre, nombre, region, provincia });
+    const grupos = agruparPorRegion([
+      loc('Zárate', 'bajo-parana', 'Buenos Aires'),
+      loc('Santa Ana', 'nea', 'Misiones'),
+      loc('Barranqueras', 'nea', 'Chaco'),
+      loc('Itatí', 'nea', 'Corrientes'),
+    ]);
+    expect(grupos.map((g) => g.region.id)).toEqual(['nea', 'bajo-parana']);
+    expect(grupos[0].localidades.map((l) => l.nombre)).toEqual(['Barranqueras', 'Itatí', 'Santa Ana']);
+    expect(grupos[0].provincias).toEqual(['Chaco', 'Corrientes', 'Misiones']);
+    // Las regiones sin localidades no aparecen.
+    expect(agruparPorRegion([loc('Itatí', 'nea', 'Corrientes')]).map((g) => g.region.id)).toEqual(['nea']);
+  });
+
+  it('las regiones tienen ids válidos y sin repetir', () => {
+    const ids = regiones.map((r) => r.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    ids.forEach((id) => expect(id).toMatch(/^[a-z0-9-]+$/));
   });
 });
 
@@ -76,6 +105,11 @@ describe('validarLocalidad', () => {
 
   it('rechaza ids que Supabase no aceptaría', () => {
     expect(validarLocalidad(conCambios((l) => (l.id = 'Itatí')))).toEqual([expect.stringMatching(/id "Itatí" inválido/)]);
+  });
+
+  it('rechaza una región desconocida y una provincia vacía', () => {
+    expect(validarLocalidad(conCambios((l) => (l.region = 'litoral')))).toEqual([expect.stringMatching(/region "litoral" desconocida/)]);
+    expect(validarLocalidad(conCambios((l) => (l.provincia = ' ')))).toEqual([expect.stringMatching(/falta provincia/)]);
   });
 
   it('exige que las zonas precalculadas cubran el simulador', () => {

@@ -18,3 +18,33 @@ values (
   null
 )
 on conflict (id) do nothing;
+
+-- Campana (Bajo Paraná, mismos datos que shared/localidades/campana.json y la migración
+-- 20261021120000_campana.sql). Cero IGN del INA (estación 41); umbrales de Prefectura.
+insert into public.localidades (id, nombre, provincia, rio, puerto_prefectura, cota_cero_m, cota_cero_provisoria, umbrales, pronostico)
+values (
+  'campana', 'Campana', 'Buenos Aires', 'Paraná de las Palmas', 'CAMPANA', 0.418, false,
+  '[{"nombre": "Alerta", "altura_m": 2.2, "color": "#f59e0b"}, {"nombre": "Evacuación", "altura_m": 2.45, "color": "#dc2626"}]',
+  null
+)
+on conflict (id) do nothing;
+
+-- Zárate (Bajo Paraná, mismos datos que shared/localidades/zarate.json y la migración
+-- 20261021120100_zarate.sql). Cero IGN del INA (estación 40); umbrales de Prefectura.
+insert into public.localidades (id, nombre, provincia, rio, puerto_prefectura, cota_cero_m, cota_cero_provisoria, umbrales, pronostico)
+values (
+  'zarate', 'Zárate', 'Buenos Aires', 'Paraná de las Palmas', 'ZARATE', 0.243, false,
+  '[{"nombre": "Alerta", "altura_m": 2.2, "color": "#f59e0b"}, {"nombre": "Evacuación", "altura_m": 2.4, "color": "#dc2626"}]',
+  null
+)
+on conflict (id) do nothing;
+
+-- Ituzaingó (mismos datos que shared/localidades/ituzaingo.json y la migración
+-- 20261021120200_ituzaingo.sql). Cero estimado y provisorio (el INA no publica cero IGN).
+insert into public.localidades (id, nombre, provincia, rio, puerto_prefectura, cota_cero_m, cota_cero_provisoria, umbrales, pronostico)
+values (
+  'ituzaingo', 'Ituzaingó', 'Corrientes', 'Paraná', 'ITUZAINGO', 58.3, true,
+  '[{"nombre": "Alerta", "altura_m": 3.5, "color": "#f59e0b"}, {"nombre": "Evacuación", "altura_m": 4.0, "color": "#dc2626"}]',
+  null
+)
+on conflict (id) do nothing;

@@ -1,7 +1,7 @@
 // Estado de todas las localidades para el mapa regional: última altura y en qué rango
 // cae respecto de los umbrales (alerta / evacuación). Una sola llamada a /api/estado (o, si
 // falla, dos consultas a Supabase), sin importar cuántas localidades haya.
-import type { Localidad, Umbral } from '../../shared/localidades';
+import { listarLocalidades, type Localidad, type Umbral } from '../../shared/localidades';
 import { consultar, supabaseConfigurado } from './supabase';
 
 export type Estado = 'evacuacion' | 'alerta' | 'normal' | 'sin-dato';
@@ -13,12 +13,15 @@ export interface EstadoLocalidad {
   estado: Estado;
 }
 
-/** Color y texto de cada estado; los de alerta y evacuación son los mismos que usan los umbrales. */
-export const ESTILO_ESTADO: Record<Estado, { color: string; texto: string }> = {
-  evacuacion: { color: '#dc2626', texto: 'Evacuación' },
-  alerta: { color: '#f59e0b', texto: 'Alerta' },
-  normal: { color: '#16a34a', texto: 'Normal' },
-  'sin-dato': { color: '#94a3b8', texto: 'Sin dato' },
+/**
+ * Color y texto de cada estado; los de alerta y evacuación son los mismos que usan los umbrales.
+ * `tinta`: color del texto sobre `color` con contraste AA (sobre el rojo, el negro no llega a 4,5:1).
+ */
+export const ESTILO_ESTADO: Record<Estado, { color: string; texto: string; tinta: string }> = {
+  evacuacion: { color: '#dc2626', texto: 'Evacuación', tinta: '#fff' },
+  alerta: { color: '#f59e0b', texto: 'Alerta', tinta: '#111' },
+  normal: { color: '#16a34a', texto: 'Normal', tinta: '#111' },
+  'sin-dato': { color: '#94a3b8', texto: 'Sin dato', tinta: '#111' },
 };
 
 /** Saca tildes y pasa a minúsculas para comparar nombres ("Evacuación" = "evacuacion"). */
@@ -124,4 +127,15 @@ export async function obtenerEstadoRegion(locs: Localidad[]): Promise<Record<str
     };
   }
   return resultado;
+}
+
+// Estado de todas las localidades compartido entre el mapa regional y el selector de la vista de
+// una localidad: ir y volver entre pantallas no repite la consulta.
+const VIGENCIA_MS = 5 * 60_000;
+let enCache: { hasta: number; promesa: Promise<Record<string, EstadoLocalidad>> } | null = null;
+
+/** `obtenerEstadoRegion` de todas las localidades registradas, reusado por 5 minutos. */
+export function estadoTodas(): Promise<Record<string, EstadoLocalidad>> {
+  if (!enCache || Date.now() > enCache.hasta) enCache = { hasta: Date.now() + VIGENCIA_MS, promesa: obtenerEstadoRegion(listarLocalidades()) };
+  return enCache.promesa;
 }

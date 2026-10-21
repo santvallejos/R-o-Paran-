@@ -2,6 +2,7 @@
   "id": "paso-de-la-patria",
   "nombre": "Paso de la Patria",
   "provincia": "Corrientes",
+  "region": "nea",
   "rio": "Paraná",
   "centro": [-58.572, -27.312],
   "zoom": 13.4,

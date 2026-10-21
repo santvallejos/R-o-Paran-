@@ -1,0 +1,10 @@
+{
+  "localidad": "campana",
+  "altura_m": 0.4,
+  "variacion_m": 0.0,
+  "fecha": "2026-10-21T00:00:00-03:00",
+  "estado": "ESTAC.",
+  "fuente": "Carga manual (último parte de Prefectura Naval)",
+  "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/",
+  "modo": "manual"
+}

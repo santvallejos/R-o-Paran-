@@ -31,7 +31,8 @@ const m = (h: number) => `${h.toFixed(2).replace('.', ',')} m`;
 const ha = (v: number) => `${Math.round(v).toLocaleString('es-AR')} ha`;
 const rgb = (c: readonly number[]) => `rgb(${c.join(',')})`;
 
-function fechaLegible(iso: string | null) {
+// También la usa la lista del mapa regional.
+export function fechaLegible(iso: string | null) {
   if (!iso) return 'sin fecha';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;

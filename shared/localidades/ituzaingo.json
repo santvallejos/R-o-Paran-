@@ -1,0 +1,59 @@
+{
+  "id": "ituzaingo",
+  "nombre": "Ituzaingó",
+  "provincia": "Corrientes",
+  "region": "nea",
+  "rio": "Paraná",
+  "centro": [-56.69, -27.588],
+  "zoom": 13.4,
+  "bbox": [-56.76, -27.61, -56.65, -27.55],
+  "semillasRio": [
+    [-56.7, -27.5845],
+    [-56.7175, -27.594]
+  ],
+  "hidrometro": {
+    "nombre": "Hidrómetro del puerto de Ituzaingó",
+    "cotaCero_m": 58.3,
+    "cotaCeroProvisoria": true,
+    "puertoPrefectura": "ITUZAINGO",
+    "notaCalibracion": "Estimado (provisorio, unos ±1 m) extrapolando aguas arriba la pendiente del río entre los hidrómetros del INA de Itá Ibaté e Itatí (cero IGN) en las crecidas de 2013 a 2026, y coincide con el pelo de agua del relieve satelital SRTM del 12/02/2000; a confirmar con el dato oficial."
+  },
+  "umbrales": [
+    { "nombre": "Alerta", "altura_m": 3.5, "color": "#f59e0b" },
+    { "nombre": "Evacuación", "altura_m": 4.0, "color": "#dc2626" }
+  ],
+  "simulador": { "min_m": 1.8, "max_m": 6.4, "paso_m": 0.05 },
+  "ina": { "serieAltura": 15 },
+  "crecidasHistoricas": [
+    { "nombre": "1983", "altura_m": 6.35, "fecha": "1983-07-15" },
+    { "nombre": "1992", "altura_m": 5.68, "fecha": "1992-06-03" },
+    { "nombre": "1998", "altura_m": 5.37, "fecha": "1998-05-01" },
+    { "nombre": "2013", "altura_m": 4.87, "fecha": "2013-06-29" },
+    { "nombre": "2015-16", "altura_m": 4.3, "fecha": "2015-12-17" },
+    { "nombre": "2023", "altura_m": 4.75, "fecha": "2023-11-07" }
+  ],
+  "dem": {
+    "nombre": "Terrarium (SRTM/Copernicus, ~30 m)",
+    "tiles": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+    "encoding": "terrarium",
+    "zoomModelo": 14,
+    "maxzoom": 15,
+    "attribution": "Relieve: Mapzen Terrain Tiles. SRTM y GMTED2010 cortesía del U.S. Geological Survey; ETOPO1, U.S. National Oceanic and Atmospheric Administration"
+  },
+  "procesamiento": {
+    "fuente": "copernicus-glo30",
+    "margenTiles_grados": 0.08,
+    "zoomTiles": [10, 14],
+    "correccionCobertura_m": { "arboles": 3.0, "arbustos": 1.0, "edificado": 2.0 },
+    "filtroMediana_px": 5,
+    "nivelesZonas_m": { "desde": 1.8, "hasta": 6.4, "paso": 0.1 },
+    "simplificarZonas_m": 12,
+    "escena3d": { "densidadArboles": 0.55, "maxArboles": 25000 }
+  },
+  "fuentes": [
+    { "nombre": "Prefectura Naval — Alturas de los ríos", "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/" },
+    { "nombre": "INA — Sistema de Alerta Hidrológico", "url": "https://www.ina.gob.ar/alerta/" },
+    { "nombre": "INA — Datos hidrológicos (API a5)", "url": "https://alerta.ina.gob.ar/pub/mapa" },
+    { "nombre": "Entidad Binacional Yacyretá — Informe hidrológico", "url": "https://www.eby.org.ar/informe-hidrologico" }
+  ]
+}

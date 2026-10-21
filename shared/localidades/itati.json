@@ -2,6 +2,7 @@
   "id": "itati",
   "nombre": "Itatí",
   "provincia": "Corrientes",
+  "region": "nea",
   "rio": "Paraná",
   "centro": [-58.245, -27.275],
   "zoom": 13.4,

@@ -1,8 +1,12 @@
+import { campana } from './campana.js';
 import { itati } from './itati.js';
+import { ituzaingo } from './ituzaingo.js';
 import { pasoDeLaPatria } from './paso-de-la-patria.js';
+import { zarate } from './zarate.js';
 import type { Localidad } from './types.js';
 
 export type { Localidad, LonLat, Umbral, FuenteOficial } from './types.js';
+export { agruparPorRegion, getRegion, regiones, type GrupoRegion, type Region } from './regiones.js';
 
 /**
  * Registro de localidades disponibles. Agregar acá las nuevas.
@@ -12,6 +16,9 @@ export type { Localidad, LonLat, Umbral, FuenteOficial } from './types.js';
 export const localidades: Record<string, Localidad> = {
   [pasoDeLaPatria.id]: pasoDeLaPatria,
   [itati.id]: itati,
+  [ituzaingo.id]: ituzaingo,
+  [campana.id]: campana,
+  [zarate.id]: zarate,
 };
 
 export const localidadPorDefecto = pasoDeLaPatria.id;

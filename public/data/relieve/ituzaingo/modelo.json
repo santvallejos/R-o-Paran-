@@ -1,0 +1,50 @@
+{
+  "ancho": 1282,
+  "alto": 789,
+  "esquinas": [
+    [
+      -56.760005950927734,
+      -27.549981113782334
+    ],
+    [
+      -56.64997100830078,
+      -27.549981113782334
+    ],
+    [
+      -56.64997100830078,
+      -27.610006133745205
+    ],
+    [
+      -56.760005950927734,
+      -27.610006133745205
+    ]
+  ],
+  "celda_m": 8.469,
+  "cotaCauce": 55.25,
+  "sinDato": 9000.0,
+  "localidad": "ituzaingo",
+  "fuenteDem": "Copernicus GLO-30",
+  "procesadoEn": "2026-10-21T13:08:50+00:00",
+  "cotaCero_m": 58.3,
+  "pasos": [
+    {
+      "correccion_cobertura": {
+        "arboles": 3.0,
+        "arbustos": 1.0,
+        "edificado": 2.0
+      },
+      "fuente": "ESA WorldCover 2021"
+    },
+    {
+      "filtro_mediana_px": 5
+    },
+    {
+      "defensas": 0
+    }
+  ],
+  "escena3d": {
+    "arboles": 25000,
+    "edificios": 13961,
+    "release_overture": "2026-09-23.1"
+  }
+}

@@ -1,8 +1,9 @@
 # Mapa de crecida del río Paraná
 
 Web informativa que muestra, sobre un mapa 3D, **qué zonas se inundan a cada altura del río**.
-Localidades: **Paso de la Patria** e **Itatí** (Corrientes), con un mapa regional del NEA para elegirlas. Se suman otras
-con un archivo de configuración (catálogo en [docs/localidades-nea.md](docs/localidades-nea.md)).
+Localidades: **Paso de la Patria**, **Itatí** e **Ituzaingó** (Corrientes), y **Campana** y **Zárate** (Buenos Aires,
+Bajo Paraná), con un mapa regional para elegirlas. Se suman otras con un archivo de configuración (catálogo en
+[docs/localidades-nea.md](docs/localidades-nea.md)).
 
 > **Aviso.** Los datos y el mapa que muestra la web son **estimaciones**: la altura del río, las zonas inundables y la
 > vista 3D se calculan con relieve satelital y datos públicos, y pueden tener errores. **No reemplazan los datos ni las
@@ -19,7 +20,8 @@ Se publica solo en Vercel con cada push a `claude/mvp-paso-de-la-patria` (rama d
 - **Altura oficial del río** con fecha, hora, estado y fuente (Prefectura Naval). La app la lee de `GET /api/nivel`
   (cacheada 30 min en la CDN de Vercel); si falla, de Supabase (una Edge Function la registra cada 2 horas, con
   historial) y después de `public/data/nivel/<localidad>.json` (carga manual).
-- **Mapa regional del NEA** con buscador y el estado de cada localidad (`GET /api/estado`: una sola consulta a
+- **Mapa regional** con las localidades agrupadas por región (NEA, Bajo Paraná; `?region=<id>` la deja elegida), buscador
+  y el estado de cada localidad (`GET /api/estado`: una sola consulta a
   Prefectura cada 30 min para todas).
 - **Gráfico de los últimos 30 días** y **crecidas de referencia** de cada localidad (por ejemplo, en Paso: 1983 9,54 m ·
   1998 8,69 m · 2016 7,78 m · 2023 7,44 m), con datos del INA (API pública a5, sin token).
@@ -109,12 +111,14 @@ docs/                   contexto del proyecto y calibración
 
 Ejemplo completo: Itatí (`shared/localidades/itati.json`), piloto de la ampliación al NEA.
 
-1. Copiar `shared/localidades/paso-de-la-patria.json` (y su `.ts`) y completar: `bbox`, `semillasRio`,
+1. Copiar `shared/localidades/paso-de-la-patria.json` (y su `.ts`) y completar: `region` (id de
+   `shared/localidades/regiones.json`, que agrupa el selector y el mapa regional; si es un tramo nuevo, sumarlo ahí),
+   `bbox`, `semillasRio`,
    `hidrometro` (cota del cero, `notaCalibracion` y nombre del puerto como figura en Prefectura), `umbrales`,
    `simulador`, `ina.serieAltura`, `procesamiento.nivelesZonas_m` y, si hay, `pronostico` y `crecidasHistoricas`.
 2. Registrarla en `shared/localidades/index.ts` (registro estático, import con extensión `.js`).
 3. `npm test`: `shared/localidades/validar.test.ts` corre `validarLocalidad()` sobre todas las localidades
-   registradas (bbox, centro y semillas dentro del área, rango del simulador, umbrales, serie del INA, cota del
+   registradas (región y provincia, bbox, centro y semillas dentro del área, rango del simulador, umbrales, serie del INA, cota del
    cero y que las zonas precalculadas cubran el simulador).
 4. Generar la migración desde el JSON (que es la fuente de verdad) y aplicarla en Supabase. Desde ese momento la
    Edge Function registra sus alturas y pisa los umbrales con los oficiales de Prefectura:
@@ -132,7 +136,10 @@ Qué datos faltan y cómo cargarlos para mejorar la estimación: [MEJORAS-DATOS.
 
 - **Cota del cero del hidrómetro provisoria** (44,00 m, estimada con los hidrómetros del INA de Itatí y Corrientes,
   que tienen cero IGN; antes 40,5 m, calibrada con edificios y descartada). Falta el dato oficial de Paso de la Patria.
-  Ver `docs/calibracion.md`.
+  Ver `docs/calibracion.md`. **Ituzaingó** también tiene cero provisorio (58,3 m, ±1 m): el INA no lo publica y se
+  estimó extrapolando la pendiente Itá Ibaté–Itatí y con el relieve SRTM (ficha en `docs/localidades-nea.md`).
+- **Campana y Zárate (Delta)**: la marea y las sudestadas mueven el río más de un metro en horas y Prefectura publica
+  la altura cada 12 h. El mapa sólo representa el desborde del río, no las inundaciones por lluvia.
 - **Relieve, probable sobreestimación**: con 44 m el modelo alcanza muchos edificios (~4.700 a 7,33 m). Copernicus
   corregido queda ~3 m por debajo del SRTM en tierra y la corrección por cobertura resta 2–3 m en zonas urbanas o
   con monte. Pendiente: validar con Sentinel-1/2 y revisar `correccionCobertura_m`.
@@ -163,7 +170,8 @@ of the Copernicus WorldDEM-30.
 
 ## Próximos pasos
 
-- Confirmar el cero del hidrómetro con el dato oficial de INA / Prefectura (hoy interpolado entre Itatí y Corrientes).
+- Confirmar el cero del hidrómetro con el dato oficial de INA / Prefectura en Paso de la Patria (hoy interpolado entre
+  Itatí y Corrientes) e Ituzaingó (hoy extrapolado desde Itá Ibaté).
 - Validar el relieve con Sentinel-1/2 de la crecida de octubre de 2026 y ajustar `correccionCobertura_m`.
 - Cargar defensas y terraplenes en Supabase y reprocesar.
 - Probar FABDEM o MDE-Ar del IGN con `procesar.py --dem` y comparar.

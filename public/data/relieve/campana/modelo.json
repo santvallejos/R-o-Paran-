@@ -1,0 +1,50 @@
+{
+  "ancho": 1283,
+  "alto": 916,
+  "esquinas": [
+    [
+      -59.01005744934082,
+      -34.124950202387396
+    ],
+    [
+      -58.89993667602539,
+      -34.124950202387396
+    ],
+    [
+      -58.89993667602539,
+      -34.190008801210865
+    ],
+    [
+      -59.01005744934082,
+      -34.190008801210865
+    ]
+  ],
+  "celda_m": 7.906,
+  "cotaCauce": 0.25,
+  "sinDato": 9000.0,
+  "localidad": "campana",
+  "fuenteDem": "Copernicus GLO-30",
+  "procesadoEn": "2026-10-21T13:07:05+00:00",
+  "cotaCero_m": 0.418,
+  "pasos": [
+    {
+      "correccion_cobertura": {
+        "arboles": 3.0,
+        "arbustos": 1.0,
+        "edificado": 2.0
+      },
+      "fuente": "ESA WorldCover 2021"
+    },
+    {
+      "filtro_mediana_px": 5
+    },
+    {
+      "defensas": 0
+    }
+  ],
+  "escena3d": {
+    "arboles": 25000,
+    "edificios": 33612,
+    "release_overture": "2026-09-23.1"
+  }
+}

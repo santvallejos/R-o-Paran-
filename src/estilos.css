@@ -164,11 +164,16 @@ button { font: inherit; cursor: pointer; }
 /* Cabecera de navegación del panel: selector de localidad y vuelta al mapa regional. */
 .selector-localidad { display: flex; align-items: center; gap: 10px; padding: 0 16px 10px; }
 .selector-localidad select {
-  flex: 1; min-width: 0; font: inherit; font-size: 14px; padding: 7px 10px;
+  /* 16 px: iOS no hace zoom al enfocar; 44 px de alto para el pulgar. */
+  flex: 1; min-width: 0; min-height: 44px; font: inherit; font-size: 16px; padding: 8px 12px;
   border: 1px solid var(--borde); border-radius: 999px; background: var(--panel); color: var(--texto);
 }
 .selector-localidad select:focus-visible, .buscador input:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
-.selector-localidad__nea { font-size: 14px; font-weight: 600; white-space: nowrap; padding: 7px 4px; }
+.selector-localidad__region {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px;
+  font-size: 14px; font-weight: 600; white-space: nowrap;
+}
+.selector-localidad__region:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; border-radius: 8px; }
 
 /* Pantalla regional. Sin selector de vista, los controles suben debajo del aviso. */
 .mapa__controles--region { top: 56px; }
@@ -177,10 +182,25 @@ button { font: inherit; cursor: pointer; }
   font-size: 13px; font-weight: 700; text-shadow: 0 0 3px #fff, 0 0 2px #fff, 0 0 1px #fff;
 }
 .marcador-region__punto {
-  width: 18px; height: 18px; border-radius: 50%; background: var(--c);
+  position: relative; width: 18px; height: 18px; border-radius: 50%; background: var(--c);
   border: 3px solid #fff; box-shadow: 0 1px 4px rgb(0 0 0 / 0.4); flex: none;
 }
+/* Área táctil de 44 px alrededor del punto, que queda solo cuando se oculta el nombre. */
+.marcador-region__punto::after { content: ''; position: absolute; inset: -16px; border-radius: 50%; }
 .marcador-region:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 6px; }
+
+/* Filtro por región: botones-chip que se pueden tocar con el pulgar. */
+.filtro-regiones { display: flex; flex-wrap: wrap; gap: 6px; }
+.filtro-regiones button {
+  min-height: 44px; padding: 0 14px; border: 1px solid var(--borde); border-radius: 999px;
+  background: none; color: var(--texto); font-size: 14px; font-weight: 600;
+}
+.filtro-regiones button span { font-weight: 400; color: var(--tenue); margin-left: 2px; }
+/* var(--panel) sobre el acento: contraste suficiente en tema claro y oscuro. */
+.filtro-regiones button[aria-pressed='true'] { background: var(--acento); border-color: var(--acento); color: var(--panel); }
+.filtro-regiones button[aria-pressed='true'] span { color: inherit; }
+.filtro-regiones button:focus-visible, .boton-enlace:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.boton-enlace { border: 0; background: none; padding: 4px 0; color: var(--acento); font-size: inherit; text-decoration: underline; }
 
 /* Buscador de la hoja regional. */
 .buscador { display: grid; gap: 4px; }
@@ -189,7 +209,14 @@ button { font: inherit; cursor: pointer; }
   padding: 9px 12px; border: 1px solid var(--borde); border-radius: 10px; background: transparent; color: inherit;
 }
 
-/* Lista de localidades: filas grandes para tocar con el pulgar (≥ 48 px). */
+/* Lista de localidades agrupada por región: filas grandes para tocar con el pulgar (≥ 48 px). */
+#lista-localidades { display: grid; gap: 14px; }
+.grupo-localidades__titulo {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 0 0 6px;
+  font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.grupo-localidades__titulo small, .grupo-localidades__estado { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--tenue); }
+.grupo-localidades__estado { margin-left: auto; color: var(--texto); font-weight: 600; }
 .lista-localidades { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .lista-localidades a {
   display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 12px;
@@ -199,4 +226,5 @@ button { font: inherit; cursor: pointer; }
 .lista-localidades a:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
 .lista-localidades__nombre { flex: 1; min-width: 0; display: grid; font-weight: 600; }
 .lista-localidades__nombre small { font-weight: 400; font-size: 12px; color: var(--tenue); }
-.lista-localidades__altura { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.lista-localidades__altura { display: grid; justify-items: end; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.lista-localidades__altura small { font-weight: 400; font-size: 11px; color: var(--tenue); }

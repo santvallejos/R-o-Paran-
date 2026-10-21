@@ -1,0 +1,50 @@
+{
+  "ancho": 1283,
+  "alto": 915,
+  "esquinas": [
+    [
+      -59.07005310058594,
+      -34.0599837154633
+    ],
+    [
+      -58.95993232727051,
+      -34.0599837154633
+    ],
+    [
+      -58.95993232727051,
+      -34.12502125438492
+    ],
+    [
+      -59.07005310058594,
+      -34.12502125438492
+    ]
+  ],
+  "celda_m": 7.913,
+  "cotaCauce": 0.25,
+  "sinDato": 9000.0,
+  "localidad": "zarate",
+  "fuenteDem": "Copernicus GLO-30",
+  "procesadoEn": "2026-10-21T13:12:10+00:00",
+  "cotaCero_m": 0.243,
+  "pasos": [
+    {
+      "correccion_cobertura": {
+        "arboles": 3.0,
+        "arbustos": 1.0,
+        "edificado": 2.0
+      },
+      "fuente": "ESA WorldCover 2021"
+    },
+    {
+      "filtro_mediana_px": 5
+    },
+    {
+      "defensas": 0
+    }
+  ],
+  "escena3d": {
+    "arboles": 25000,
+    "edificios": 46262,
+    "release_overture": "2026-09-23.1"
+  }
+}
