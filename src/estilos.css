@@ -33,7 +33,7 @@ button { font: inherit; cursor: pointer; }
 .app { position: relative; height: 100dvh; overflow: hidden; }
 
 .aviso {
-  position: absolute; z-index: 3; top: 0; left: 0; right: 0;
+  position: absolute; z-index: 10; top: 0; left: 0; right: 0;
   padding: 8px 16px; padding-top: max(8px, env(safe-area-inset-top));
   background: var(--aviso); color: var(--aviso-texto);
   font-size: 13px; line-height: 1.35; text-align: center;
