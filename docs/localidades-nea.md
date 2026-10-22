@@ -2,7 +2,8 @@
 
 Catálogo de localidades ribereñas del NEA (Corrientes, Chaco, Formosa y Misiones) con hidrómetro de Prefectura, y
 fichas de las localidades cargadas: **Itatí** (relevada el **18/10/2026**), **Ituzaingó** y, fuera del NEA, **Campana**
-y **Zárate** en el Bajo Paraná (relevadas el **21/10/2026**). Cada valor lleva su fuente; lo que no se pudo
+y **Zárate** en el Bajo Paraná (relevadas el **21/10/2026**), y **Corrientes** capital (relevada el **22/10/2026**).
+Cada valor lleva su fuente; lo que no se pudo
 obtener figura como **FALTANTE**.
 
 ## Fuentes
@@ -48,7 +49,7 @@ El `id_externo` del INA es el `id` del historial de Prefectura (por ejemplo, Ita
 | Itá Ibaté | Corrientes | Paraná | ITA IBATE | 16 / 16 | 52,42 | −57,3333; −27,4234 (≈) | 7,00 / 7,50 | catálogo |
 | **Itatí** | Corrientes | Paraná | **ITATI** | **17 / 17** | **45,66** | **−58,2441; −27,2668** | **6,80 / 7,50** | **piloto** |
 | Paso de la Patria | Corrientes | Paraná | PASO DE LA PATRIA | 18 / 18 | FALTANTE (44,0 provisorio, ver `calibracion.md`) | −58,5833; −27,3333 (≈) | 6,50 / 7,00 | activa |
-| Corrientes | Corrientes | Paraná | CORRIENTES | 19 / 19 | 42,39 | −58,8389; −27,4636 | 6,50 / 7,00 | catálogo |
+| **Corrientes** | Corrientes | Paraná | **CORRIENTES** | **19 / 19** | **42,39** | **−58,8389; −27,4636** | **6,50 / 7,00** | **activa** |
 | Empedrado | Corrientes | Paraná | EMPEDRADO | 21 / 21 | 39,68 | −58,8185; −27,9541 | 6,50 / 7,00 | catálogo |
 | Bella Vista | Corrientes | Paraná | BELLA VISTA | 22 / 22 | 34,74 | −59,0593; −28,5184 | 6,00 / 6,40 | catálogo |
 | Goya | Corrientes | Paraná | GOYA | 23 / 23 | 29,67 | −59,273; −29,1438 | 5,20 / 5,70 | catálogo |
@@ -437,6 +438,185 @@ El casco queda seco (el centro se inundaría recién con 21,7 m en la escala).
 5. Barrios o parajes evacuados con la crecida actual y su altura (municipio, Defensa Civil de Corrientes).
 6. Defensas o cotas de la costanera de Ituzaingó (municipio).
 7. Pronóstico vigente: el de la EBY vence el 21/10/2026.
+
+## Corrientes (capital)
+
+Datos relevados el **22/10/2026**. Caso **A** (puerto de Prefectura con `cero_ign` en el INA). Todas las consultas se
+hicieron con el `User-Agent` `mapa-crecida-parana (proyecto informativo sin fines de lucro)`. Fuentes nuevas además de
+las de la tabla general:
+
+| Sigla | Fuente | URL |
+|---|---|---|
+| INA-O19 | INA, API a5: observaciones de la serie 19 (1901–2026, 47.980 datos) | https://alerta.ina.gob.ar/a5/obs/puntual/observaciones?series_id=19&timestart=1900-01-01&timeend=2026-10-23&format=json |
+| INA-T | INA, API a5: pronóstico del SAH (calibrado 289 "tabprono_central", serie simulada 1540), emitido el 20/10/2026 | https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=19&includeProno=true&format=json |
+| SAH-T | INA, "Pronóstico Hidrométrico, río Paraná tramo Argentino" del 20/10/2026 (la tabla es una imagen; los valores salen de INA-T) | https://www.ina.gob.ar/archivos/alerta/TabProno20261020.pdf |
+| IDEMCC | Municipalidad de Corrientes, Infraestructura de Datos Espaciales (IDEMCC, miembro de IDERA): GeoServer con WMS y WFS | https://gis.ciudaddecorrientes.gov.ar/geoservicios.php |
+| IDEMCC-B | IDEMCC, WFS `wfs_idemcc:vw_barrios_de_la_ciudad` (140 barrios con nombre, tipo y ordenanza) | https://gisdesa.ciudaddecorrientes.gov.ar:8282/geoserver/wfs_idemcc/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=wfs_idemcc:vw_barrios_de_la_ciudad&outputFormat=application/json&srsName=EPSG:4326 |
+
+**Uso de los datos de la IDEMCC.** Las capacidades del WMS y del WFS declaran `Fees: NONE` y `AccessConstraints:
+NONE`, pero el portal no publica una licencia. El WFS pide el usuario público que la Municipalidad publica en
+`geoservicios.php` para el acceso abierto. Los barrios se usaron **sólo para validar** el modelo y nombrar zonas en esta
+ficha: la app no muestra ni redistribuye geometrías de la IDEMCC, así que no hace falta atribución en
+`src/lib/creditos.ts`. Si más adelante se quisiera mostrar una capa municipal (barrios, centros de evacuados), primero
+hay que pedir las condiciones de uso a la Dirección General de SIG (idecorrientes@gmail.com) y sumar la atribución.
+La IDEMCC no tiene capas de relieve, curvas de nivel, cotas ni defensas (revisadas las 165 capas del WMS el 22/10/2026).
+
+### Hidrómetro
+
+| Dato | Valor | Fuente |
+|---|---|---|
+| Estación INA | id 19, "Corrientes", `id_externo` 130, río PARANAMED, propietario PNA, `abreviatura` CORR | INA-E |
+| Serie de altura | **19** (variable 2, medición directa, m), del 02/01/1901 al 21/10/2026, 47.980 datos | INA-S (`estacion_id=19`) |
+| Otras series | 26261 media diaria (1901–2026), 25497 media mensual, 868 caudal (curva de gasto), 1540 altura pronosticada (SAH) | INA-S |
+| Coordenadas | −58,8388696; −27,46364349 (puerto, junto al barrio La Rosada) | INA-E |
+| Cero IGN | **42,39 m** | INA-E (`cero_ign`) |
+| Sistema de referencia del cero | **FALTANTE**: la API no lo informa (`altitud` = null) | INA-E |
+| Alerta / evacuación | 6,50 m / 7,00 m (iguales en INA y Prefectura) | PNA, INA-E |
+| Aguas bajas | 1,83 m | INA-E (`nivel_aguas_bajas`) |
+| Puerto en Prefectura | `CORRIENTES` (historial id 130), río PARANA, dato cada 2 h | PNA |
+
+**Control del cero con el relieve.** El 12/02/2000 (pasada del SRTM) el hidrómetro marcaba **2,95 m** (07:00Z;
+2,90 m el 11/02 y 2,94 m el 13/02) (INA-O19), o sea agua a 2,95 + 42,39 = **45,34 m**. En el DEM Terrarium el cauce
+frente al puerto es plano a **45,0 m** (transecto en −27,4636, de −58,865 a −58,850) y aguas abajo, frente a Arazaty y
+Villa Patono, a 44,0 m. Diferencia: **−0,34 m**, menor que en Itatí (−0,76 m). Se carga el cero IGN sin corregir,
+`cotaCeroProvisoria: false`.
+
+### Situación actual (22/10/2026)
+
+| Dato | Valor | Fuente |
+|---|---|---|
+| Última altura Prefectura | **7,43 m**, 22/OCT/26 08:00 | PNA |
+| Variación | +0,05 m en 2 h (anterior 7,38 m, 22/OCT/26 06:00) | PNA |
+| Estado | EVACUACION CRECE | PNA |
+| Última lectura en el INA | 7,36 m, 2026-10-21T03:00Z | INA-O19 |
+| Cota del agua | 7,43 + 42,39 = **49,82 m** | cálculo |
+| Subida en octubre | 4,92 m (10/10) → 5,50 m (14/10) → 6,13 m (16/10) → 6,89 m (18/10) → 7,27 m (20/10) → 7,36 m (21/10) | INA-O19 |
+
+Con 7,43 m el río **superó el pico de 2023 (7,15 m) y el de diciembre de 2015 (7,41 m)**, y está a 4 cm del de enero de
+2016 (7,47 m). Si los pasa, es la marca más alta en Corrientes desde mayo de 1998 (8,39 m).
+
+### Crecidas de referencia (serie 19)
+
+| Crecida | Pico | Fecha | Nota |
+|---|---|---|---|
+| 1983 | **9,02 m** | 18/07/1983 | Primer pico de 8,98 m el 21/06. Máximo de la serie (1901–2026) |
+| 1992 | **8,64 m** | 08/06/1992 | |
+| 1998 | **8,39 m** | 04/05/1998 | |
+| 2015-16 | **7,47 m** | 09/01/2016 | Misma crecida (El Niño 2015-16): 7,41 m el 21/12/2015 |
+| 2023 | **7,15 m** | 09/11/2023 | 21:00Z |
+
+Otros picos: 1905 8,57 m (05/06), 1966 y 1990 7,93 m, 1982 7,80 m (11/12), 1997 7,70 m (11/02), 2013 7,22 m (04/07),
+2014 7,16 m (18/06). Estiaje reciente: **0,04 m** (20 y 21/01/2022). No se descartó ningún dato aislado (ninguna lectura
+difiere más de 0,8 m de las vecinas). Fechas en UTC, como las da `timestart`.
+
+### Pronóstico
+
+- **SAH-INA (oficial, corto plazo):** el pronóstico del 20/10/2026 (INA-T, SAH-T) da para Corrientes **7,14 m
+  (6,60–7,40) el 27/10** y **7,58 m (7,00–7,80) el 03/11/2026**. Son "tendencias en los valores medios diarios" y el
+  SAH los actualiza el **23/10/2026**. La lectura del 22/10 (7,43 m) ya supera la banda alta del 27/10.
+- **No se carga en `pronostico`**: vence en un día y nadie lo mantiene. Si se decide mostrarlo, se carga en Supabase
+  (`localidades.pronostico`, sin redeploy) con cada emisión del SAH (dos por semana), o se lee de INA-T desde la app
+  (cambio aparte).
+
+### Impactos, defensas y evacuados
+
+| Fecha (altura en el puerto) | Lugares | Qué pasó | Fuente |
+|---|---|---|---|
+| Nov. 2023 (6,15 m, creciendo) | Virgen de los Dolores, Quinta Ferré, Arazaty, Itatí, Anahí y Lomas del Mirador | "Los anegamientos alcanzaron los barrios capitalinos…"; familias de barrios costeros evacuadas; el CIC del barrio Anahí como centro de evacuación | Economis, nota de 2023 (sin fecha visible; imagen de noviembre de 2023): https://economis.com.ar/?p=337801 |
+| 15/10/2026 (5,79 m) | Punta Taitalo, Puerto Italia y la franja entre el barrio Caridi y La Tosquera | El intendente los señala como los sectores ribereños más expuestos | Perfil, 15/10/2026 (URL en la ficha de Itatí) |
+| 16/10/2026 (6,23 m) | Barrio Anahí (zona norte); costanera en Punta San Sebastián | Agua en calles, veredas y viviendas de Anahí; 71 autoevacuados (14 familias) en la capital; Defensa Civil prevé el agua en la Costanera a la altura de Punta San Sebastián; se prepara una escuela de Molina Punta como refugio | Elonce, 16/10/2026: https://www.elonce.com/uid-889586 ; Perfil, 16/10/2026: https://www.perfil.com/noticias/nea/crecida-del-rio-parana-supero-los-6-metros-en-la-capital-y-ya-hay-222-evacuados-en-corrientes.phtml |
+| 19/10/2026 (7,07 m) | Punta Taitalo, Río Paraná, Itatí, Sol de Mayo; "bajo Caridi" (foto) | 344 autoevacuados según Defensa Civil (380 personas, 103 familias, según Desarrollo Social municipal) | Perfil, 19/10/2026 (URL en la ficha de Ituzaingó); Canal 12 Misiones, 19/10/2026: https://www.canal12misiones.com/informacion-general/parana-corrientes-750-evacuados |
+| Defensas o terraplenes | **FALTANTE** | No se encontró información pública de defensas de la capital con cota de coronamiento (la IDEMCC no tiene la capa). El casco está sobre la barranca; la Costanera es un muro costero sin cota publicada | búsqueda web, IDEMCC |
+| Centros de evacuados | **PARCIAL**: CIC del barrio Anahí (2023), Centros Integradores Comunitarios y una escuela de Molina Punta (2026), sin lista oficial ni coordenadas | | notas citadas |
+
+"Itatí", "Caridi", "Puerto Italia", "La Tosquera" y "Punta San Sebastián" no figuran como barrios en la IDEMCC
+(son asentamientos o parajes); su ubicación exacta es **FALTANTE**.
+
+### Geografía y área del modelo
+
+- **Ciudad** (OSM, Nominatim): relación 8878216 "Corrientes" (ejido urbano) de −58,859 a −58,712 y de −27,538 a
+  −27,424; el municipio (relación 3127758) llega a −58,626 y −27,682. Overpass no respondió el 22/10/2026 (servidores
+  saturados); los barrios de la IDEMCC reemplazan el conteo de calles.
+- **Barrios** (IDEMCC-B): los 140 polígonos ocupan lon −58,857 a −58,650 y lat −27,551 a −27,404. Los del este
+  (clubes de campo, Laguna Brava, Paso Martínez) están en la meseta y alrededor de lagunas, a 58–68 m.
+- **Río**: viene de Paso de la Patria (NE) pegado a la costa norte (Perichón, Punta Taitalo, Molina Punta), pasa
+  frente al puerto y el puente General Belgrano y gira al sur frente a Arazaty y Villa Patono. En el DEM, agua plana a
+  45,0 m frente al puerto y a Punta Taitalo, y a 44,0 m aguas abajo. Enfrente están las islas (47–55 m) y, detrás del
+  riacho Barranqueras, Barranqueras y Resistencia (Chaco). Ambas orillas son argentinas: el límite es provincial.
+- **Relieve** (DEM, con vegetación y edificios): el casco y casi toda la ciudad están sobre una barranca de 60–66 m,
+  por encima del pico de 1983 (9,02 + 42,39 = 51,41 m). Por debajo quedan la franja costera del norte (Perichón, Punta
+  Taitalo, Molina Punta), el bajo de Bañado Norte, Sol de Mayo, Anahí y Quinta Ferré (entrada de agua por −58,81;
+  −27,46), la costa de Arazaty, Galván y Virgen de los Dolores, el barrio Río Paraná y el valle del Riachuelo al sur
+  (44–51 m, barrios Esperanza y Santa Margarita).
+
+Propuesta (cargada):
+
+| Campo | Valor | Justificación |
+|---|---|---|
+| `bbox` [O, S, E, N] | **[−58.885, −27.565, −58.73, −27.40]** | 0,155° × 0,165° (unas 3,7 veces Itatí). De Perichón (N, −27,404) al valle del Riachuelo (S) y del cauce frente al puerto (O) al borde este de Perichón (−58,733). Deja afuera Barranqueras y Resistencia (detrás de sus defensas, que el modelo no tiene: aparecerían inundadas) y la meseta del este con sus lagunas, que no se conectan con el río. |
+| `centro` [lon, lat] | **[−58.832, −27.47]** | Barrio Centro (IDEMCC-B); terreno a 63,7 m. |
+| `zoom` | **12.9** | Itatí usa 13,4 con 0,11° de ancho; con 0,155° hace falta ~0,5 menos. |
+| `semillasRio` | **[−58.857, −27.4636]**, **[−58.86, −27.49]** y **[−58.79, −27.435]** | Cauce frente al puerto (45,0 m), aguas abajo frente a Arazaty (44,0 m) y aguas arriba frente a Punta Taitalo (45,0 m). La diferencia de 1 m entre semillas es la pendiente del río y el redondeo a metro del SRTM, no tierra. |
+
+### Rango del simulador
+
+- `simulador`: **4,80 a 9,10 m**, de a 0,05 m. El mínimo queda 1,7 m por debajo de la alerta; el máximo cubre el pico
+  de 1983 (9,02 m).
+- `procesamiento.nivelesZonas_m`: **desde 4,8, hasta 9,1, paso 0,1** (44 niveles).
+
+### Vista previa (`vista-previa.mjs`, SRTM sin corregir, cero 42,39 m)
+
+| Altura | Cota | Área con agua |
+|---|---|---|
+| 6,50 m (alerta) | 48,89 m | 2.417 ha |
+| 7,00 m (evacuación) | 49,39 m | 3.263 ha |
+| 7,15 m (2023) | 49,54 m | 3.335 ha |
+| 7,43 m (22/10/2026) | 49,82 m | 3.520 ha |
+| 7,47 m (2015-16) | 49,86 m | 3.545 ha |
+| 8,39 m (1998) | 50,78 m | 4.835 ha |
+| 8,64 m (1992) | 51,03 m | 5.746 ha |
+| 9,02 m (1983) | 51,41 m | 6.159 ha |
+
+El área crece con la altura; la mayor parte son islas y el valle del Riachuelo. El centro queda seco (se inundaría
+recién con 21,3 m en la escala).
+
+**Validación con los barrios de la IDEMCC.** Cruzando los polígonos de barrios con el mismo modelo, los que tienen
+agua con 7,07 m (19/10/2026) son, de más a menos superficie: Arazaty (23 %), Río Paraná (17 %), 3 de Abril (16 %),
+Esperanza (14 %), Lomas del Mirador (13 %), Plácido Martínez (11 %), Galván (11 %), Sol de Mayo (7 %), Sor María
+Assunta Pittaro (7 %), Quinta Ferré (5 %), Villa Patono (5 %), Anahí y Punta Taitalo (4 %). Coincide con los barrios
+nombrados por el municipio y la prensa en 2023 y 2026 (Arazaty, Lomas del Mirador, Río Paraná, Sol de Mayo, Quinta
+Ferré, Virgen de los Dolores, Anahí, Punta Taitalo, Molina Punta). Los porcentajes son bajos porque el SRTM mide techos
+y árboles; Virgen de los Dolores casi no se moja hasta 8 m en el SRTM (1 % con 7,07 m, 7 % con 8,39 m), cuando en 2023 se anegó con ~6,2 m: el relieve
+sin corregir queda alto en la costa poblada, como en las demás localidades.
+
+### Relieve procesado (`procesar.py corrientes`, 22/10/2026)
+
+- Copernicus GLO-30 con corrección por cobertura (WorldCover) y mediana de 5 px; sin defensas. Grilla del modelo de
+  1806 × 2168 celdas de 8,5 m. Pelo de agua de Copernicus: 43,0 m (≈ 0,61 m en la escala): es el valor aplanado que
+  edita Copernicus sobre el agua, no una medición (ver `cota-del-cero.md`, métodos descartados).
+- Zonas: 4,80 m → 4.122 ha; 5,50 → 4.875; 6,20 → 5.404; 6,90 → 5.922; 7,60 → 6.241; 8,30 → 6.515; 9,00 → 6.803 ha.
+  Crecen con la altura; con 4,80 m ya hay mucha superficie porque la corrección por árboles baja el monte de las islas
+  y del valle del Riachuelo.
+- Escena 3D: 25.000 árboles y 146.653 edificios (Overture 2026-10-21.0). Peso de `public/data/relieve/corrientes/`:
+  **29 MB** (12 MB de tiles, 11 MB de escena), unas 3,5 veces una localidad chica.
+- Barrios de la IDEMCC con agua en el modelo procesado (% de la superficie con 6,15 / 7,07 / 9,02 m): Esperanza
+  20 / 22 / 56, 3 de Abril 28 / 32 / 38, Arazaty 19 / 21 / 37, Lomas del Mirador 20 / 22 / 27, Río Paraná 20 / 21 / 23,
+  Villa Patono 13 / 16 / 21, Quinta Ferré 12 / 13 / 20, Galván 14 / 16 / 20, Virgen de los Dolores 11 / 12 / 15, Sol
+  de Mayo 12 / 13 / 15, Molina Punta (parque balneario) 5 / 6 / 9, Punta Taitalo 6 / 6 / 9, Anahí 6 / 7 / 8. Con el
+  relieve corregido, Virgen de los Dolores ya se moja con 6,15 m, como en 2023. El centro queda seco (umbral a 16,8 m
+  en la escala). La lista de barrios citados por la prensa coincide; para confirmar las alturas a las que se anega
+  cada uno falta el registro de Defensa Civil.
+
+### Datos faltantes de Corrientes
+
+1. **Defensas y cota de la Costanera** (muro costero, Punta San Sebastián, accesos al puerto): Municipalidad (Obras
+   Públicas) o ICAA. Es lo que más cambiaría el mapa en el frente urbano.
+2. Sistema de referencia vertical del cero IGN (como en todas las estaciones).
+3. Ubicación de los asentamientos y parajes citados por la prensa (Itatí, Caridi, Puerto Italia, La Tosquera, Punta San
+   Sebastián) y la altura del río con la que se anegó cada uno: Defensa Civil municipal.
+4. Lista oficial y ubicación de los centros de evacuados de 2026.
+5. Condiciones de uso de los datos de la IDEMCC, por si se quiere mostrar alguna capa municipal en la app.
+6. Pronóstico mantenido: el del SAH se renueva dos veces por semana (próximo, 23/10/2026).
 
 ## Bajo Paraná / Delta: Campana y Zárate
 

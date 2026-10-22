@@ -1,7 +1,7 @@
 # Mapa de crecida del río Paraná
 
 Web informativa que muestra, sobre un mapa 3D, **qué zonas se inundan a cada altura del río**.
-Localidades: **Paso de la Patria**, **Itatí** e **Ituzaingó** (Corrientes), y **Campana** y **Zárate** (Buenos Aires,
+Localidades: **Corrientes** (capital), **Paso de la Patria**, **Itatí** e **Ituzaingó** (Corrientes), y **Campana** y **Zárate** (Buenos Aires,
 Bajo Paraná), con un mapa regional para elegirlas. Se suman otras con un archivo de configuración (catálogo en
 [docs/localidades-nea.md](docs/localidades-nea.md)).
 
