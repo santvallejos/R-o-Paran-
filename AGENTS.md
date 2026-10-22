@@ -5,7 +5,7 @@ This file provides guidance to Claude Code and others agents when working with c
 ## Propósito del proyecto
 
 Web que muestra, sobre un mapa 3D, cómo la crecida del río Paraná afecta a distintas localidades del NEA y del Bajo
-Paraná (hoy Paso de la Patria, Itatí e Ituzaingó, Corrientes; Campana y Zárate, Buenos Aires): la altura oficial del
+Paraná (hoy Corrientes capital, Paso de la Patria, Itatí e Ituzaingó, Corrientes; Campana y Zárate, Buenos Aires): la altura oficial del
 río y las zonas que se inundan a cada nivel. Es un proyecto **sin fines de lucro, educativo y práctico**. **No reemplaza ni compite con las fuentes oficiales** (Prefectura Naval,
 INA, municipio, Defensa Civil) ni pretende ser fuente de confianza durante la emergencia: busca reflejar, en lo
 posible, cómo la crecida afecta a cada zona.

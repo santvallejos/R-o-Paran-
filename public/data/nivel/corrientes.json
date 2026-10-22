@@ -1,0 +1,10 @@
+{
+  "localidad": "corrientes",
+  "altura_m": 7.43,
+  "variacion_m": 0.05,
+  "fecha": "2026-10-22T08:00:00-03:00",
+  "estado": "EVACUACION CRECE",
+  "fuente": "Carga manual (último parte de Prefectura Naval)",
+  "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/",
+  "modo": "manual"
+}

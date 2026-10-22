@@ -1,0 +1,58 @@
+{
+  "id": "corrientes",
+  "nombre": "Corrientes",
+  "provincia": "Corrientes",
+  "region": "nea",
+  "rio": "Paraná",
+  "centro": [-58.832, -27.47],
+  "zoom": 12.9,
+  "bbox": [-58.885, -27.565, -58.73, -27.40],
+  "semillasRio": [
+    [-58.857, -27.4636],
+    [-58.86, -27.49],
+    [-58.79, -27.435]
+  ],
+  "hidrometro": {
+    "nombre": "Hidrómetro del puerto de Corrientes",
+    "cotaCero_m": 42.39,
+    "cotaCeroProvisoria": false,
+    "puertoPrefectura": "CORRIENTES",
+    "notaCalibracion": "Cero IGN 42,39 m publicado por el INA (estación 19). El INA no declara el sistema de alturas: contra el relieve, el agua del río queda unos 0,3 m por encima del DEM."
+  },
+  "umbrales": [
+    { "nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b" },
+    { "nombre": "Evacuación", "altura_m": 7.0, "color": "#dc2626" }
+  ],
+  "simulador": { "min_m": 4.8, "max_m": 9.1, "paso_m": 0.05 },
+  "ina": { "serieAltura": 19 },
+  "crecidasHistoricas": [
+    { "nombre": "1983", "altura_m": 9.02, "fecha": "1983-07-18" },
+    { "nombre": "1992", "altura_m": 8.64, "fecha": "1992-06-08" },
+    { "nombre": "1998", "altura_m": 8.39, "fecha": "1998-05-04" },
+    { "nombre": "2015-16", "altura_m": 7.47, "fecha": "2016-01-09" },
+    { "nombre": "2023", "altura_m": 7.15, "fecha": "2023-11-09" }
+  ],
+  "dem": {
+    "nombre": "Terrarium (SRTM/Copernicus, ~30 m)",
+    "tiles": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+    "encoding": "terrarium",
+    "zoomModelo": 14,
+    "maxzoom": 15,
+    "attribution": "Relieve: Mapzen Terrain Tiles. SRTM y GMTED2010 cortesía del U.S. Geological Survey; ETOPO1, U.S. National Oceanic and Atmospheric Administration"
+  },
+  "procesamiento": {
+    "fuente": "copernicus-glo30",
+    "margenTiles_grados": 0.08,
+    "zoomTiles": [10, 14],
+    "correccionCobertura_m": { "arboles": 3.0, "arbustos": 1.0, "edificado": 2.0 },
+    "filtroMediana_px": 5,
+    "nivelesZonas_m": { "desde": 4.8, "hasta": 9.1, "paso": 0.1 },
+    "simplificarZonas_m": 12,
+    "escena3d": { "densidadArboles": 0.55, "maxArboles": 25000 }
+  },
+  "fuentes": [
+    { "nombre": "Prefectura Naval — Alturas de los ríos", "url": "https://contenidosweb.prefecturanaval.gob.ar/alturas/" },
+    { "nombre": "INA — Sistema de Alerta Hidrológico", "url": "https://www.ina.gob.ar/alerta/" },
+    { "nombre": "INA — Datos hidrológicos (API a5)", "url": "https://alerta.ina.gob.ar/pub/mapa" }
+  ]
+}

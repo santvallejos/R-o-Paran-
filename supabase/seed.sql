@@ -48,3 +48,13 @@ values (
   null
 )
 on conflict (id) do nothing;
+
+-- Corrientes capital (mismos datos que shared/localidades/corrientes.json y la migración
+-- 20261022120000_corrientes.sql). Cero IGN del INA (estación 19); umbrales de Prefectura e INA.
+insert into public.localidades (id, nombre, provincia, rio, puerto_prefectura, cota_cero_m, cota_cero_provisoria, umbrales, pronostico)
+values (
+  'corrientes', 'Corrientes', 'Corrientes', 'Paraná', 'CORRIENTES', 42.39, false,
+  '[{"nombre": "Alerta", "altura_m": 6.5, "color": "#f59e0b"}, {"nombre": "Evacuación", "altura_m": 7.0, "color": "#dc2626"}]',
+  null
+)
+on conflict (id) do nothing;

@@ -1,4 +1,5 @@
 import { campana } from './campana.js';
+import { corrientes } from './corrientes.js';
 import { itati } from './itati.js';
 import { ituzaingo } from './ituzaingo.js';
 import { pasoDeLaPatria } from './paso-de-la-patria.js';
@@ -17,6 +18,7 @@ export const localidades: Record<string, Localidad> = {
   [pasoDeLaPatria.id]: pasoDeLaPatria,
   [itati.id]: itati,
   [ituzaingo.id]: ituzaingo,
+  [corrientes.id]: corrientes,
   [campana.id]: campana,
   [zarate.id]: zarate,
 };
